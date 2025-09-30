@@ -1,0 +1,44 @@
+
+services:
+  user-db:
+    image: postgres:15
+    container_name: user-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: userdb
+      POSTGRES_USER: berkay
+      POSTGRES_PASSWORD: berkay
+    ports:
+      - "5432:5432"
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+    networks:
+      - user-network
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    depends_on:
+      - user-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-db:5432/userdb
+      SPRING_DATASOURCE_USERNAME: berkay
+      SPRING_DATASOURCE_PASSWORD: berkay
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: true
+    networks:
+      - user-network
+
+volumes:
+  user-db-data:
+    name: user-db-data
+    driver: local
+
+networks:
+  user-network:
+    driver: bridge
