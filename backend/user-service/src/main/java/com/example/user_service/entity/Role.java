@@ -8,6 +8,7 @@ import lombok.*;
 @Getter @Setter
 @Table(name = "roles")
 @Builder
+@Entity
 public class Role {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
