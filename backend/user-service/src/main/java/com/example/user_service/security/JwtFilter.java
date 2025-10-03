@@ -31,6 +31,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
         try {
+            System.out.println("Filter çalıştı: " + request.getServletPath());
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
                 String username = jwtService.extractUsername(token);
@@ -47,6 +48,7 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         } catch (JwtException e) {
             log.error("Invalid JWT token: {}", e.getMessage());
+            System.out.println("Path: " + request.getServletPath());
             SecurityContextHolder.clearContext();
         }
         filterChain.doFilter(request, response);

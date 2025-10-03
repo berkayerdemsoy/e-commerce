@@ -1,11 +1,12 @@
 package com.example.user_service.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import com.example.user_service.entity.Role;
 
-public record UserUpdateRequestDto(
-        @NotBlank(message = "Username is required")
-        String username,
-        @NotBlank(message = "Password is Required")
-        String password
+import java.util.Set;
+
+public record UserUpdateRequestDto (
+        String email,
+        String password,
+        Set<Role> roles
 ) {
 }
