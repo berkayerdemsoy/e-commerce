@@ -1,4 +1,3 @@
-
 services:
   user-db:
     image: postgres:15
@@ -9,9 +8,25 @@ services:
       POSTGRES_USER: berkay
       POSTGRES_PASSWORD: berkay
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - user-db-data:/var/lib/postgresql/data
+    networks:
+      - user-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: berkayerdemsoy@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: berkay123
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    ports:
+      - "8888:80"
+    depends_on:
+      - user-db
     networks:
       - user-network
 
@@ -30,13 +45,16 @@ services:
       SPRING_DATASOURCE_USERNAME: berkay
       SPRING_DATASOURCE_PASSWORD: berkay
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_JPA_SHOW_SQL: true
+      SPRING_JPA_SHOW_SQL: "true"
     networks:
       - user-network
 
 volumes:
   user-db-data:
     name: user-db-data
+    driver: local
+  pgadmin-data:
+    name: pgadmin-data
     driver: local
 
 networks:

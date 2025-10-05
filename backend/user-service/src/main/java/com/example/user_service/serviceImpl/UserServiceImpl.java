@@ -1,26 +1,25 @@
 package com.example.user_service.serviceImpl;
 
 import com.example.user_service.config.PasswordEncoderConfig;
-import com.example.user_service.dto.*;
+import com.example.user_service.dto.UserLoginDto;
+import com.example.user_service.dto.UserRegisterDto;
+import com.example.user_service.dto.UserResponseDto;
 import com.example.user_service.entity.Role;
 import com.example.user_service.entity.User;
+import com.example.user_service.entity.UserPrincipal;
 import com.example.user_service.mapper.UserMapper;
 import com.example.user_service.repository.UserRepository;
 import com.example.user_service.security.JwtService;
-import com.example.user_service.security.UserPrincipal;
 import com.example.user_service.service.UserService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -28,55 +27,56 @@ import java.util.Set;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
-    private final PasswordEncoderConfig paswordEncoder;
+    private final PasswordEncoderConfig passwordEncoderConfig;
     private final JwtService jwtService;
-    private final AuthenticationManager manager;
+    private final AuthenticationManager authenticationManager;
+    private final UserMapper userMapper;
+
 
     @Override
-    @RequestMapping(path = "delete/{id}")
-    public void deleteUserById(@PathVariable Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User Not Found"));
-        userRepository.deleteById(user.getId());
+    public String register(UserRegisterDto userRegisterDto) {
+        if (userRepository.findByUsername(userRegisterDto.username()).isPresent()) {
+            throw new RuntimeException("Username already exists");
+        }
+        if (userRepository.findByEmail(userRegisterDto.email()).isPresent()) {
+            throw new RuntimeException("Email already exists");
+        }
+        User user = User.builder()
+                .username(userRegisterDto.username())
+                .email(userRegisterDto.email())
+                .password(passwordEncoderConfig.passwordEncoder().encode(userRegisterDto.password()))
+                .roles(Set.of(Role.USER))
+                .isAccountNonExpired(true)
+                .isAccountNonLocked(true)
+                .isCredentialsNonExpired(true)
+                .isEnabled(true)
+                .build();
+
+        User savedUser = userRepository.save(user);
+        UserDetails userDetails = new UserPrincipal(savedUser);
+
+        return jwtService.generateToken(userDetails);
     }
 
     @Override
-    public Optional<UserResponseDto> getUserByUsername(String username) {
-        return userRepository.findByUsername(username).map(userMapper::toDto);
-    }
+    public String login(UserLoginDto userLoginDto) {
+        User user = userRepository.findByUsername(userLoginDto.username())
+                .orElseThrow(() -> new RuntimeException("Invalid username or password"));
+        Authentication authentication =  authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                userLoginDto.username(),
+                userLoginDto.password()
+        ));
 
-    @Override
-    public AuthResponse registerUser(UserRegisterRequestDto dto) {
-        if (userRepository.existsByEmail(dto.email()) || userRepository.existsByUsername(dto.username())){
-            throw new RuntimeException("Username or email already exists");
+        if (!passwordEncoderConfig.passwordEncoder().matches(userLoginDto.password(), user.getPassword())) {
+            throw new RuntimeException("Invalid username or password");
         }
 
-        User user = userMapper.toEntityFromRegister(dto);
-        user.setPassword(paswordEncoder.passwordEncoder().encode(dto.password()));
-        user.setRoles(Set.of(Role.USER));
-        User saved = userRepository.save(user);
-
-        String jwtToken = jwtService.generateToken(new UserPrincipal(saved));
-        return new AuthResponse(jwtToken);
+        UserDetails userDetails = new UserPrincipal(user);
+        return jwtService.generateToken(userDetails);
     }
 
     @Override
-    public AuthResponse loginUser(UserLoginRequestDto dto) {
-        Authentication authentication = manager.authenticate(
-                new UsernamePasswordAuthenticationToken(dto.username(),dto.password())
-        );
-
-        User user = userRepository.findByUsername(dto.username()).orElseThrow(
-                () -> new RuntimeException("User not found")
-        );
-
-        String jwtToken = jwtService.generateToken(new UserPrincipal(user));
-        return new AuthResponse(jwtToken);
-
-    }
-
-    @Override
-    public Page<UserResponseDto> getALlUsers(Pageable pageable) {
+    public Page<UserResponseDto> getAllUsers(Pageable pageable) {
         Page<User> users = userRepository.findAll(pageable);
         return users.map(userMapper::toDto);
     }
@@ -88,13 +88,29 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDto updateUserById(Long id, UserUpdateRequestDto userUpdateRequestDto) {
-        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
-        user.setRoles(userUpdateRequestDto.roles());
-        user.setPassword(userUpdateRequestDto.password());
-        user.setEmail(userUpdateRequestDto.email());
-        User updated = userRepository.save(user);
-        return userMapper.toDto(updated);
+    public Void deleteUserById(Long id) {
+        userRepository.deleteById(id);
+        return null;
+    }
+
+    @Override
+    public UserResponseDto getUserByUsername(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+        return userMapper.toDto(user);
+    }
+
+    @Override
+    public UserResponseDto updateUserById(Long id, UserRegisterDto userRegisterDto) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setUsername(userRegisterDto.username());
+        if(userRegisterDto.email() !=null && !userRegisterDto.email().isBlank()) {
+            user.setEmail(userRegisterDto.email());
+        }
+        if(userRegisterDto.password() !=null && !userRegisterDto.password().isBlank()){
+            user.setPassword(passwordEncoderConfig.passwordEncoder().encode(userRegisterDto.password()));
+        }
+        User updatedUser = userRepository.save(user);
+        return userMapper.toDto(updatedUser);
     }
 
 
