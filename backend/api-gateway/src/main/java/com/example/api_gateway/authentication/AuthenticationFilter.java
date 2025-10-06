@@ -26,8 +26,11 @@ public class AuthenticationFilter implements Ordered , GlobalFilter {
 
     private boolean isPublicEndpoint(ServerHttpRequest request) {
         String path = request.getURI().getPath();
-        return publicEndpoints.stream().anyMatch(path::startsWith);
+        return publicEndpoints.stream().anyMatch(endpoint ->
+                path.equals(endpoint) || path.startsWith(endpoint + "/")
+        );
     }
+
     private Mono<Void> onError(ServerWebExchange exchange, HttpStatus status) {
         exchange.getResponse().setStatusCode(status);
         return exchange.getResponse().setComplete();
