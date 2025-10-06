@@ -1,0 +1,25 @@
+server:
+  port :8080
+
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: user-service-route
+              uri: lb://user-service
+              predicates:
+                - Path=/api/users/**
+              filters:
+                - RewritePath=/api/users/(?<segment>.*) , /$\{segment}
+
+            - id: auth-service-route
+              uri: lb://user-service
+              predicates:
+                - Path=/auth/**
+
+jwt:
+  secret: "4WeV2ipAS1fvqNSGSB8wuvMWSB5qX1UbNcSgu5TJYa5pWLCz6DBHTC0dgPWj6UwNvrtofPA029qSS+m9b/rq5p6CXu+Rlw+rTHpe1SSusYvTAZ5D4SGq4kwfSFFdYiaQyhXyojdVGzBvRQqzW2yjS9oukZRlGlkQlhnhsYShdCo="

@@ -48,6 +48,18 @@ services:
       SPRING_JPA_SHOW_SQL: "true"
     networks:
       - user-network
+  gateway-service:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - user-service
+    networks:
+      - user-network
 
 volumes:
   user-db-data:

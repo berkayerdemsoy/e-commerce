@@ -7,7 +7,9 @@ import com.example.user_service.dto.UserResponseDto;
 import com.example.user_service.entity.Role;
 import com.example.user_service.entity.User;
 import com.example.user_service.entity.UserPrincipal;
+import com.example.user_service.entity.UserProfile;
 import com.example.user_service.mapper.UserMapper;
+import com.example.user_service.repository.UserProfileRepository;
 import com.example.user_service.repository.UserRepository;
 import com.example.user_service.security.JwtService;
 import com.example.user_service.service.UserService;
@@ -31,6 +33,7 @@ public class UserServiceImpl implements UserService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final UserMapper userMapper;
+    private final UserProfileRepository userProfileRepository;
 
 
     @Override
@@ -51,6 +54,15 @@ public class UserServiceImpl implements UserService {
                 .isCredentialsNonExpired(true)
                 .isEnabled(true)
                 .build();
+
+        UserProfile userProfile = UserProfile.builder()
+                .address(userRegisterDto.address())
+                .dob(userRegisterDto.dob())
+                .gender(userRegisterDto.gender())
+                .full_name(userRegisterDto.full_name())
+                .phone_number(userRegisterDto.phone_number())
+                .build();
+        userProfileRepository.save(userProfile);
 
         User savedUser = userRepository.save(user);
         UserDetails userDetails = new UserPrincipal(savedUser);
