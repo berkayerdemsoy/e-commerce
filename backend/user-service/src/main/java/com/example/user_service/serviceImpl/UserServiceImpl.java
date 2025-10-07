@@ -8,6 +8,9 @@ import com.example.user_service.entity.Role;
 import com.example.user_service.entity.User;
 import com.example.user_service.entity.UserPrincipal;
 import com.example.user_service.entity.UserProfile;
+import com.example.user_service.exception.AlreadyExistsException;
+import com.example.user_service.exception.InvalidCredentialsException;
+import com.example.user_service.exception.UserNotFoundException;
 import com.example.user_service.mapper.UserMapper;
 import com.example.user_service.repository.UserProfileRepository;
 import com.example.user_service.repository.UserRepository;
@@ -22,7 +25,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
+import java.util.Collections;
+import java.util.HashSet;
 
 @Service
 @RequiredArgsConstructor
@@ -39,16 +43,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public String register(UserRegisterDto userRegisterDto) {
         if (userRepository.findByUsername(userRegisterDto.username()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            throw new AlreadyExistsException("User already exists");
         }
         if (userRepository.findByEmail(userRegisterDto.email()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new AlreadyExistsException("Email already exists");
         }
         User user = User.builder()
                 .username(userRegisterDto.username())
                 .email(userRegisterDto.email())
                 .password(passwordEncoderConfig.passwordEncoder().encode(userRegisterDto.password()))
-                .roles(Set.of(Role.USER))
+                .roles(new HashSet<>(Collections.singleton(Role.USER)))
                 .isAccountNonExpired(true)
                 .isAccountNonLocked(true)
                 .isCredentialsNonExpired(true)
@@ -56,6 +60,7 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         UserProfile userProfile = UserProfile.builder()
+                .user(user)
                 .address(userRegisterDto.address())
                 .dob(userRegisterDto.dob())
                 .gender(userRegisterDto.gender())
@@ -73,14 +78,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public String login(UserLoginDto userLoginDto) {
         User user = userRepository.findByUsername(userLoginDto.username())
-                .orElseThrow(() -> new RuntimeException("Invalid username or password"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
         Authentication authentication =  authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 userLoginDto.username(),
                 userLoginDto.password()
         ));
 
         if (!passwordEncoderConfig.passwordEncoder().matches(userLoginDto.password(), user.getPassword())) {
-            throw new RuntimeException("Invalid username or password");
+            throw new InvalidCredentialsException("Invalid username or password");
         }
 
         UserDetails userDetails = new UserPrincipal(user);
@@ -95,7 +100,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto getUserById(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
         return userMapper.toDto(user);
     }
 
@@ -107,13 +112,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto getUserByUsername(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found"));
         return userMapper.toDto(user);
     }
 
     @Override
     public UserResponseDto updateUserById(Long id, UserRegisterDto userRegisterDto) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
         user.setUsername(userRegisterDto.username());
         if(userRegisterDto.email() !=null && !userRegisterDto.email().isBlank()) {
             user.setEmail(userRegisterDto.email());

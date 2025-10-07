@@ -21,6 +21,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         return userProfileMapper.toDto(userProfile);
     }
 
+    // null kontrolune gerek yok
     @Override
     public UserProfileDto updateUserProfile(Long id ,UserProfileDto userProfileDto) {
         UserProfile userProfile = userProfileRepository.findById(id).orElseThrow(() ->

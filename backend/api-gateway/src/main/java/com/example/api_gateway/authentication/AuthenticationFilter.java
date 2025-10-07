@@ -26,21 +26,15 @@ public class AuthenticationFilter implements Ordered , GlobalFilter {
 
     private boolean isPublicEndpoint(ServerHttpRequest request) {
         String path = request.getURI().getPath();
-        return publicEndpoints.stream().anyMatch(endpoint ->
-                path.equals(endpoint) || path.startsWith(endpoint + "/")
-        );
+        return publicEndpoints.stream().anyMatch(path::startsWith);
     }
+
 
     private Mono<Void> onError(ServerWebExchange exchange, HttpStatus status) {
         exchange.getResponse().setStatusCode(status);
         return exchange.getResponse().setComplete();
     }
 
-
-    @Override
-    public int getOrder() {
-        return -1;
-    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -60,13 +54,17 @@ public class AuthenticationFilter implements Ordered , GlobalFilter {
         }
         String token = authHeader.substring(7);
 
-        try{
-            jwtService.isTokenValid(token);
-        }catch (Exception e){
-            return onError(exchange,HttpStatus.UNAUTHORIZED);
+        if (!jwtService.isTokenValid(token)) {
+            return onError(exchange, HttpStatus.UNAUTHORIZED);
         }
+
         return chain.filter(exchange);
 
+    }
+
+    @Override
+    public int getOrder() {
+        return -1;
     }
 
 }

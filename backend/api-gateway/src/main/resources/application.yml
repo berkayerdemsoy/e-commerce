@@ -6,18 +6,24 @@ spring:
     name: gateway-service
   cloud:
     gateway:
-      routes:
-        - id: user-service-route
-          uri: http://user-service:8080
-          predicates:
-            - Path=/api/users/**
-          filters:
-            - RewritePath=/api/users/(?<segment>.*), /$\{segment}
+      server:
+        webflux:
+          routes:
+            - id: user-service-route
+              uri: http://user-service:8080
+              predicates:
+                - Path=/api/users/**
+              filters: []
+#                - RewritePath=/api/users/(?<segment>.*), /${segment}
 
-        - id: auth-service-route
-          uri: http://user-service:8080
-          predicates:
-            - Path=/auth/**
+            - id: auth-service-route
+              uri: http://user-service:8080
+              predicates:
+                - Path=/auth/**
 
 jwt:
   secret: "4WeV2ipAS1fvqNSGSB8wuvMWSB5qX1UbNcSgu5TJYa5pWLCz6DBHTC0dgPWj6UwNvrtofPA029qSS+m9b/rq5p6CXu+Rlw+rTHpe1SSusYvTAZ5D4SGq4kwfSFFdYiaQyhXyojdVGzBvRQqzW2yjS9oukZRlGlkQlhnhsYShdCo="
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.cloud.gateway: DEBUG
