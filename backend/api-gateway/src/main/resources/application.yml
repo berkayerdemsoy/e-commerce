@@ -21,6 +21,21 @@ spring:
               predicates:
                 - Path=/auth/**
 
+
+            - id: category-service-route
+              uri: http://shop-service:8080
+              predicates:
+                - Path=/api/category/**
+              filters:
+                - RewritePath=/api/category/(?<segment>.*), /shop/category/${segment}
+
+            - id: product-service-route
+              uri: http://shop-service:8080
+              predicates:
+                - Path=/api/product/**
+              filters:
+                - RewritePath=/api/product/(?<segment>.*), /shop/product/${segment}
+
 jwt:
   secret: "4WeV2ipAS1fvqNSGSB8wuvMWSB5qX1UbNcSgu5TJYa5pWLCz6DBHTC0dgPWj6UwNvrtofPA029qSS+m9b/rq5p6CXu+Rlw+rTHpe1SSusYvTAZ5D4SGq4kwfSFFdYiaQyhXyojdVGzBvRQqzW2yjS9oukZRlGlkQlhnhsYShdCo="
 logging:

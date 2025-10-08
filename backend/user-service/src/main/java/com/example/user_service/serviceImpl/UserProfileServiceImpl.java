@@ -26,21 +26,11 @@ public class UserProfileServiceImpl implements UserProfileService {
     public UserProfileDto updateUserProfile(Long id ,UserProfileDto userProfileDto) {
         UserProfile userProfile = userProfileRepository.findById(id).orElseThrow(() ->
                 new RuntimeException("User not found"));
-        if(userProfileDto.address() !=null) {
             userProfile.setAddress(userProfileDto.address());
-        }
-        if (userProfileDto.gender() !=null) {
             userProfile.setGender(userProfileDto.gender());
-        }
-        if (userProfileDto.full_name() !=null ) {
             userProfile.setFull_name(userProfileDto.full_name());
-        }
-        if (userProfileDto.phone_number()!=null) {
             userProfile.setPhone_number(userProfileDto.phone_number());
-        }
-        if(userProfileDto.dob() !=null) {
             userProfile.setDob(userProfileDto.dob());
-        }
         return userProfileMapper.toDto(userProfile);
     }
 }

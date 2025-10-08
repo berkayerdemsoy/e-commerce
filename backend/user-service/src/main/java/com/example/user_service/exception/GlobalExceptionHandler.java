@@ -46,6 +46,22 @@ public class GlobalExceptionHandler  {
                 .body(error);
     }
 
+    @ExceptionHandler({InvalidCredentialsException.class})
+    public ResponseEntity<Object> handleInvalidCredentialsHandler(InvalidCredentialsException exception,
+                                                                  HttpServletRequest request){
+        ErrorResponseDto error = new ErrorResponseDto(
+                "INVALID_CREDENTIALS",
+                exception.getMessage(),
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(error);
+    }
+
     @ExceptionHandler({RuntimeException.class})
     public ResponseEntity<Object> handleRuntimeException(RuntimeException exception,
                                                          HttpServletRequest request){
@@ -62,19 +78,5 @@ public class GlobalExceptionHandler  {
                 .body(error);
     }
 
-    @ExceptionHandler({InvalidCredentialsException.class})
-    public ResponseEntity<Object> handleInvalidCredentialsHandler(InvalidCredentialsException exception,
-                                                                  HttpServletRequest request){
-        ErrorResponseDto error = new ErrorResponseDto(
-                "INVALID_CREDENTIALS",
-                exception.getMessage(),
-                HttpStatus.BAD_REQUEST.value(),
-                LocalDateTime.now(),
-                request.getRequestURI()
-        );
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(error);
-    }
 }

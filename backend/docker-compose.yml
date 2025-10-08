@@ -44,7 +44,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://user-db:5432/userdb
       SPRING_DATASOURCE_USERNAME: berkay
       SPRING_DATASOURCE_PASSWORD: berkay
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
       SPRING_JPA_SHOW_SQL: "true"
     networks:
       - user-network
@@ -61,12 +61,48 @@ services:
     networks:
       - user-network
 
+  shop-service:
+    build:
+      context: ./shop-service
+      dockerfile: Dockerfile
+    container_name: shop-service
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+    depends_on:
+      - shop-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://shop-db:5432/shopdb
+      SPRING_DATASOURCE_USERNAME: berkay
+      SPRING_DATASOURCE_PASSWORD: berkay
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+      SPRING_JPA_SHOW_SQL: "true"
+    networks:
+      - user-network
+  shop-db:
+    image: postgres:15
+    container_name: shop-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shopdb
+      POSTGRES_USER: berkay
+      POSTGRES_PASSWORD: berkay
+    ports:
+      - "5434:5432"
+    volumes:
+      - shop-db-data:/var/lib/postgresql/data
+    networks:
+      - user-network
+
 volumes:
   user-db-data:
     name: user-db-data
     driver: local
   pgadmin-data:
     name: pgadmin-data
+    driver: local
+  shop-db-data:
+    name: shop-db-data
     driver: local
 
 networks:
