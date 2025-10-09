@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String register(UserRegisterDto userRegisterDto) {
-        if (userRepository.findByUsername(userRegisterDto.username()).isPresent()) {
+        if (userRepository.findByUsernameIgnoreCase(userRegisterDto.username()).isPresent()) {
             throw new AlreadyExistsException("User already exists");
         }
         if (userRepository.findByEmail(userRegisterDto.email()).isPresent()) {
@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String login(UserLoginDto userLoginDto) {
-        User user = userRepository.findByUsername(userLoginDto.username())
+        User user = userRepository.findByUsernameIgnoreCase(userLoginDto.username())
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
         Authentication authentication =  authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 userLoginDto.username(),
@@ -112,7 +112,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto getUserByUsername(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found"));
+        User user = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new UserNotFoundException("User not found"));
         return userMapper.toDto(user);
     }
 

@@ -1,6 +1,5 @@
 package com.example.shop_service.serviceImpl;
 
-import com.example.shop_service.dto.CategoryDto;
 import com.example.shop_service.dto.ProductCreateDto;
 import com.example.shop_service.entity.Category;
 import com.example.shop_service.entity.Product;
@@ -27,7 +26,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductCreateDto addProduct(ProductCreateDto dto) {
-        if (productRepository.findByName(dto.getName()).isPresent()){
+        if (productRepository.findByNameIgnoreCase(dto.getName()).isPresent()){
             throw new AlreadyExistsException("Product already exists");
         }
 
@@ -66,7 +65,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductCreateDto getProductByName(String name) {
-        Product product = productRepository.findByName(name).orElseThrow(() -> new NotFoundException("Product not found"));
+        Product product = productRepository.findByNameIgnoreCase(name).orElseThrow(() -> new NotFoundException("Product not found"));
         return productMapper.toDto(product);
     }
 

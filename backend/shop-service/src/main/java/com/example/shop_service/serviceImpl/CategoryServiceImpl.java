@@ -34,14 +34,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto getCategoryByName(String name) {
-        Category category = categoryRepository.findByName(name).orElseThrow(() ->
+        Category category = categoryRepository.findByNameIgnoreCase(name).orElseThrow(() ->
                 new NotFoundException("Category not found"));
         return categoryMapper.toDto(category);
     }
 
     @Override
     public CategoryDto createCategory(CategoryDto categoryDto) {
-        if (categoryRepository.findByName(categoryDto.name).isPresent()){
+        if (categoryRepository.findByNameIgnoreCase(categoryDto.name).isPresent()){
             throw new AlreadyExistsException("Category is already exists");
         }
         Category category = Category.builder()

@@ -1,0 +1,62 @@
+package com.example.warehouse_service.serviceImpl;
+
+import com.example.warehouse_service.dto.WarehouseDto;
+import com.example.warehouse_service.entity.Warehouse;
+import com.example.warehouse_service.exception.AlreadyExistsException;
+import com.example.warehouse_service.exception.NotFoundException;
+import com.example.warehouse_service.mapper.WarehouseMapper;
+import com.example.warehouse_service.repository.WarehouseRepository;
+import com.example.warehouse_service.service.WarehouseService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class WarehouseServiceImpl implements WarehouseService{
+    private final WarehouseRepository warehouseRepository;
+    private final WarehouseMapper warehouseMapper;
+    @Override
+    public Page<WarehouseDto> getAllWarehouses(Pageable pageable) {
+        Page<Warehouse> warehouses = warehouseRepository.findAll(pageable);
+        return warehouses.map(warehouseMapper::toDto);
+    }
+
+    @Override
+    public WarehouseDto getWarehouseById(Long id) {
+        Warehouse warehouse = warehouseRepository.findById(id).orElseThrow(() -> new NotFoundException("Warehouse not found"));
+        return warehouseMapper.toDto(warehouse);
+    }
+
+    @Override
+    public WarehouseDto getWarehouseByName(String name) {
+        Warehouse warehouse = warehouseRepository.findByNameIgnoreCase(name).orElseThrow(() -> new NotFoundException("Warehouse not found"));
+        return warehouseMapper.toDto(warehouse);
+    }
+
+    @Override
+    public WarehouseDto createWarehouse(WarehouseDto warehouseDto) {
+        if(warehouseRepository.findByNameIgnoreCase(warehouseDto.getName()).isPresent()){
+            throw  new AlreadyExistsException("Warehouse Already exists");
+        }
+        Warehouse warehouse = warehouseMapper.toEntity(warehouseDto);
+        Warehouse saved = warehouseRepository.save(warehouse);
+        return warehouseMapper.toDto(saved);
+    }
+
+    @Override
+    public WarehouseDto updateWarehouse(Long id, WarehouseDto warehouseDto) {
+        Warehouse warehouse = warehouseRepository.findById(id).orElseThrow(() -> new NotFoundException("Warehouse not found"));
+        warehouse.setLocation(warehouseDto.getLocation());
+        warehouse.setName(warehouseDto.getName());
+        Warehouse saved = warehouseRepository.save(warehouse);
+        return warehouseMapper.toDto(saved);
+    }
+
+    @Override
+    public Void deleteWarehouse(Long id) {
+        warehouseRepository.deleteById(id);
+        return null;
+    }
+}

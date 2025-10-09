@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,7 +22,7 @@ public class UserController {
          UserResponseDto user =userService.getUserById(id);
          return ResponseEntity.ok(user);
     }
-
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/username/{username}")
     public ResponseEntity<UserResponseDto> getUserByUsername(@PathVariable String username) {
         UserResponseDto user = userService.getUserByUsername(username);
