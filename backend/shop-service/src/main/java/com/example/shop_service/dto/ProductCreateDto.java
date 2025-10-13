@@ -11,5 +11,5 @@ public class ProductCreateDto {
     private String name;
     private String description;
     private double price;
-    private Category category_id;
+    private Long categoryId;
 }

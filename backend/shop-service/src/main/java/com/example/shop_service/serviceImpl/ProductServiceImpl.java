@@ -30,29 +30,30 @@ public class ProductServiceImpl implements ProductService {
             throw new AlreadyExistsException("Product already exists");
         }
 
-        Category category = categoryRepository.findById(dto.getCategory_id().getId()).orElseThrow(() -> new NotFoundException("Category Not Found"));
+        Category category = categoryRepository.getReferenceById(dto.getCategoryId());
 
 
         Product product = Product.builder()
                 .name(dto.getName())
                 .price(dto.getPrice())
                 .description(dto.getDescription())
-                .category_id(category)
+                .category(category)
                 .build();
 
         Product saved = productRepository.save(product);
-        return productMapper.toDto(product);
+        return productMapper.toDto(saved);
     }
 
     @Override
     public ProductCreateDto updateProduct(Long id, ProductCreateDto dto) {
         Product product = productRepository.findById(id).orElseThrow(() -> new NotFoundException("Product not found"));
-        Category category = categoryRepository.findById(dto.getCategory_id().getId()).orElseThrow(() -> new NotFoundException("Category Not Found"));
+        Category category = categoryRepository.getReferenceById(dto.getCategoryId());
+
 
         product.setDescription(dto.getDescription());
         product.setName(dto.getName());
         product.setPrice(dto.getPrice());
-        product.setCategory_id(category);
+        product.setCategory(category);
         Product updated = productRepository.save(product);
         return productMapper.toDto(updated);
     }

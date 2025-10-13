@@ -111,7 +111,7 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
     networks:
-      user-network:
+      - user-network
 
   warehouse-db:
     image: postgres:15
@@ -127,6 +127,7 @@ services:
       - warehouse-db-data:/var/lib/postgresql/data
     networks:
       - user-network
+
 
 volumes:
   user-db-data:
