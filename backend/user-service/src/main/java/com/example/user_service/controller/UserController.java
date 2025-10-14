@@ -2,6 +2,7 @@ package com.example.user_service.controller;
 
 import com.example.user_service.dto.UserRegisterDto;
 import com.example.user_service.dto.UserResponseDto;
+import com.example.user_service.dto.UserRoleResponse;
 import com.example.user_service.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,5 +49,11 @@ public class UserController {
         UserResponseDto updated =  userService.updateUserById(id, dto);
         return ResponseEntity.ok(updated);
     }
+    @GetMapping("/api/users/role/{role}")
+    public ResponseEntity<List<UserRoleResponse>> getUsersByRole(@PathVariable String role) {
+        List<UserRoleResponse> users = userService.getUsersByRole(role);
+        return ResponseEntity.ok(users);
+    }
+
 
 }

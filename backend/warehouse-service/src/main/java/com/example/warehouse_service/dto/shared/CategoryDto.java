@@ -1,4 +1,4 @@
-package com.example.warehouse_service.dto;
+package com.example.warehouse_service.dto.shared;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

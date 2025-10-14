@@ -2,7 +2,7 @@ package com.example.warehouse_service.serviceImpl;
 
 import com.example.warehouse_service.client.CategoryClient;
 import com.example.warehouse_service.dto.AisleDto;
-import com.example.warehouse_service.dto.CategoryDto;
+import com.example.warehouse_service.dto.shared.CategoryDto;
 import com.example.warehouse_service.entity.Aisle;
 import com.example.warehouse_service.entity.Warehouse;
 import com.example.warehouse_service.exception.AlreadyExistsException;

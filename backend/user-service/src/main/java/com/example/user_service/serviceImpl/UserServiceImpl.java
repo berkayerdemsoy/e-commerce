@@ -4,6 +4,7 @@ import com.example.user_service.config.PasswordEncoderConfig;
 import com.example.user_service.dto.UserLoginDto;
 import com.example.user_service.dto.UserRegisterDto;
 import com.example.user_service.dto.UserResponseDto;
+import com.example.user_service.dto.UserRoleResponse;
 import com.example.user_service.entity.Role;
 import com.example.user_service.entity.User;
 import com.example.user_service.entity.UserPrincipal;
@@ -27,6 +28,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -128,6 +131,27 @@ public class UserServiceImpl implements UserService {
         }
         User updatedUser = userRepository.save(user);
         return userMapper.toDto(updatedUser);
+    }
+
+    @Override
+    public List<UserRoleResponse> getUsersByRole(String role) {
+        Role enumRole;
+        try {
+            enumRole = Role.valueOf(role.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Geçersiz rol: " + role);
+        }
+
+        List<User> users = userRepository.findByRolesContaining(enumRole);
+
+        return users.stream()
+                .map(user -> new UserRoleResponse(
+                        user.getId(),
+                        user.getUsername(),
+                        user.getEmail(),
+                        user.getRoles().toString()
+                ))
+                .collect(Collectors.toList());
     }
 
 
