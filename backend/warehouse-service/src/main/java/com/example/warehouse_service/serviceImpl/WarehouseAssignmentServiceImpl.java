@@ -1,6 +1,6 @@
 package com.example.warehouse_service.serviceImpl;
 
-import com.example.warehouse_service.client.UserClient;
+import com.example.user_service_client.client.UserServiceClient;
 import com.example.warehouse_service.entity.UserWarehouseAssignment;
 import com.example.warehouse_service.entity.WarehouseRole;
 import com.example.warehouse_service.exception.AlreadyExistsException;
@@ -20,7 +20,7 @@ public class WarehouseAssignmentServiceImpl implements WarehouseAssignmentServic
 
     private final WarehouseAssignmentRepository assignmentRepository;
     private final WarehouseRepository warehouseRepository;
-    private final UserClient userClient;
+    private final UserServiceClient userClient;
     @Override
     public void assignWarehouseAdmin(Long userId, Long warehouseId) {
     warehouseRepository.findById(warehouseId).orElseThrow(() -> new NotFoundException("Warehouse not found"));

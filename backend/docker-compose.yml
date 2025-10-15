@@ -32,8 +32,8 @@ services:
 
   user-service:
     build:
-      context: ./user-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: user-service/user-service-app/Dockerfile
     container_name: user-service
     restart: unless-stopped
     ports:
@@ -96,8 +96,8 @@ services:
 
   warehouse-service:
     build:
-      context: ./warehouse-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: warehouse-service/Dockerfile
     container_name: warehouse-service
     restart: unless-stopped
     ports:
