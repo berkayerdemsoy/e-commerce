@@ -63,8 +63,8 @@ services:
 
   shop-service:
     build:
-      context: ./shop-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./shop-service/shop-service-app/Dockerfile
     container_name: shop-service
     restart: unless-stopped
     ports:
@@ -97,7 +97,7 @@ services:
   warehouse-service:
     build:
       context: .
-      dockerfile: warehouse-service/Dockerfile
+      dockerfile: ./warehouse-service/warehouse-service-app/Dockerfile
     container_name: warehouse-service
     restart: unless-stopped
     ports:

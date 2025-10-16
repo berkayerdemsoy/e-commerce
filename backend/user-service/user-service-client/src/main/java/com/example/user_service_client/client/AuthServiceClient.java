@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(
         name = "user-service-app",
-        path = "/auth"
+        contextId = "authClient",
+        path = "/auth",
+        url = "http://api-gateway:8080"
 )
 public interface AuthServiceClient {
 

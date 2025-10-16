@@ -26,8 +26,10 @@
         <!-- <module>gateway-service</module> -->
         <module>user-service/user-service-app</module>
         <module>user-service/user-service-client</module>
-        <module>warehouse-service</module>
-        <module>shop-service</module>
+        <module>warehouse-service/warehouse-service-client</module>
+        <module>warehouse-service/warehouse-service-app</module>
+        <module>shop-service/shop-service-app</module>
+        <module>shop-service/shop-service-client</module>
         <module>api-gateway</module>
 
     </modules>
@@ -68,6 +70,13 @@
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
                     <version>${spring.boot.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>

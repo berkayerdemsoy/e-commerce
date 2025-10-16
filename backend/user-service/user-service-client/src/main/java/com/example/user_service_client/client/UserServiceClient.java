@@ -14,7 +14,9 @@ import java.util.List;
 
 @FeignClient(
         name = "user-service-app",
-        path = "/api/users"
+        contextId = "userClient",
+        path = "/api/users",
+        url = "http://api-gateway:8080"
 )
 public interface UserServiceClient {
 

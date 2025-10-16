@@ -21,23 +21,23 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserResponseDto> getUserById(@PathVariable("id") Long id) {
          UserResponseDto user =userService.getUserById(id);
          return ResponseEntity.ok(user);
     }
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/username/{username}")
-    public ResponseEntity<UserResponseDto> getUserByUsername(@PathVariable String username) {
+    public ResponseEntity<UserResponseDto> getUserByUsername(@PathVariable("username") String username) {
         UserResponseDto user = userService.getUserByUsername(username);
         return ResponseEntity.ok(user);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUserById(@PathVariable Long id){
+    public ResponseEntity<Void> deleteUserById(@PathVariable("id") Long id){
         userService.deleteUserById(id);
         return ResponseEntity.noContent().build();
     }
-
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping
     public ResponseEntity<Page<UserResponseDto>> getAllUsers(Pageable pageable){
         Page<UserResponseDto> users =  userService.getAllUsers(pageable);
@@ -45,12 +45,12 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> updateUserById(@PathVariable Long id , @Valid @RequestBody UserRegisterDto dto){
+    public ResponseEntity<UserResponseDto> updateUserById(@PathVariable("id") Long id , @Valid @RequestBody UserRegisterDto dto){
         UserResponseDto updated =  userService.updateUserById(id, dto);
         return ResponseEntity.ok(updated);
     }
     @GetMapping("/api/users/role/{role}")
-    public ResponseEntity<List<UserRoleResponse>> getUsersByRole(@PathVariable String role) {
+    public ResponseEntity<List<UserRoleResponse>> getUsersByRole(@PathVariable("role") String role) {
         List<UserRoleResponse> users = userService.getUsersByRole(role);
         return ResponseEntity.ok(users);
     }
