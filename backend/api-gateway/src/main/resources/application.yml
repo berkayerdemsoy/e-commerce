@@ -64,6 +64,13 @@ spring:
               filters:
                 - RewritePath=/api/assignments/(?<segment>.*), /assignments/${segment}
 
+            - id: warehouse-category-service-route
+              uri: http://warehouse-service:8080
+              predicates:
+                - Path=/api/warehouse-categories/**
+              filters:
+                - RewritePath=/api/warehouse-categories/(?<segment>.*), /warehouse-categories/${segment}
+
 jwt:
   secret: "4WeV2ipAS1fvqNSGSB8wuvMWSB5qX1UbNcSgu5TJYa5pWLCz6DBHTC0dgPWj6UwNvrtofPA029qSS+m9b/rq5p6CXu+Rlw+rTHpe1SSusYvTAZ5D4SGq4kwfSFFdYiaQyhXyojdVGzBvRQqzW2yjS9oukZRlGlkQlhnhsYShdCo="
 logging:

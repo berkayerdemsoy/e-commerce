@@ -120,14 +120,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDto updateUserById(Long id, UserRegisterDto userRegisterDto) {
+    public UserResponseDto updateUserById(Long id, UserLoginDto userLoginDto) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
-        user.setUsername(userRegisterDto.username());
-        if(userRegisterDto.email() !=null && !userRegisterDto.email().isBlank()) {
-            user.setEmail(userRegisterDto.email());
-        }
-        if(userRegisterDto.password() !=null && !userRegisterDto.password().isBlank()){
-            user.setPassword(passwordEncoderConfig.passwordEncoder().encode(userRegisterDto.password()));
+        user.setUsername(userLoginDto.username());
+        if(userLoginDto.password() !=null && !userLoginDto.password().isBlank()){
+            user.setPassword(passwordEncoderConfig.passwordEncoder().encode(userLoginDto.password()));
         }
         User updatedUser = userRepository.save(user);
         return userMapper.toDto(updatedUser);

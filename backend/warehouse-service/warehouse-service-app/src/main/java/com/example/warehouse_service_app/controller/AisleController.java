@@ -21,11 +21,11 @@ public class AisleController {
         return ResponseEntity.ok(aisleService.getAllAisles(pageable));
     }
     @GetMapping("/id/{id}")
-    public ResponseEntity<AisleDto> getAisleById(@PathVariable Long id){
+    public ResponseEntity<AisleDto> getAisleById(@PathVariable("id") Long id){
         return ResponseEntity.ok(aisleService.getAisleById(id));
     }
     @GetMapping("/code/{code}")
-    public ResponseEntity<AisleDto> getAisleByCode(@PathVariable String code){
+    public ResponseEntity<AisleDto> getAisleByCode(@PathVariable("code") String code){
         return ResponseEntity.ok(aisleService.getAisleByCode(code));
     }
     @PostMapping("/create")
@@ -33,11 +33,11 @@ public class AisleController {
         return ResponseEntity.status(HttpStatus.CREATED).body(aisleService.createAisle(aisleDto));
     }
     @PutMapping("/update/{id}")
-    public ResponseEntity<AisleDto> updateAisle(@PathVariable Long id,@Valid @RequestBody AisleDto aisleDto){
+    public ResponseEntity<AisleDto> updateAisle(@PathVariable("id") Long id,@Valid @RequestBody AisleDto aisleDto){
         return ResponseEntity.ok(aisleService.updateAisle(id, aisleDto));
     }
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAisle(@PathVariable Long id){
+    public ResponseEntity<Void> deleteAisle(@PathVariable("id") Long id){
         aisleService.deleteAisleById(id);
         return ResponseEntity.noContent().build();
     }

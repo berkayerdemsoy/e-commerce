@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 @FeignClient(
         name = "warehouse-service",
         contextId = "shelfClient",
-        path = "/shelf",
+        path = "/api/shelf",
         url = "http://api-gateway:8080"
 
 )

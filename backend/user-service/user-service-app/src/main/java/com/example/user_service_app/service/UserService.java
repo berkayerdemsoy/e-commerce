@@ -16,7 +16,7 @@ public interface UserService {
     UserResponseDto getUserById(Long id);
     Void deleteUserById(Long id);
     UserResponseDto getUserByUsername(String username);
-    UserResponseDto updateUserById(Long id, UserRegisterDto userRegisterDto);
+    UserResponseDto updateUserById(Long id, UserLoginDto userLoginDto);
     List<UserRoleResponse> getUsersByRole(String role);
 
 }

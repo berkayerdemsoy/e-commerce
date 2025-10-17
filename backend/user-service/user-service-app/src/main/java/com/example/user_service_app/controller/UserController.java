@@ -1,5 +1,6 @@
 package com.example.user_service_app.controller;
 
+import com.example.user_service_client.dto.UserLoginDto;
 import com.example.user_service_client.dto.UserRegisterDto;
 import com.example.user_service_client.dto.UserResponseDto;
 import com.example.user_service_client.dto.UserRoleResponse;
@@ -45,7 +46,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> updateUserById(@PathVariable("id") Long id , @Valid @RequestBody UserRegisterDto dto){
+    public ResponseEntity<UserResponseDto> updateUserById(@PathVariable("id") Long id , @Valid @RequestBody UserLoginDto dto){
         UserResponseDto updated =  userService.updateUserById(id, dto);
         return ResponseEntity.ok(updated);
     }

@@ -34,9 +34,9 @@ public class WarehouseAssignmentController {
 
     @DeleteMapping("/{warehouseId}/user/{userId}/role/{role}")
     public ResponseEntity<Void> removeAssignment(
-            @PathVariable Long warehouseId,
-            @PathVariable Long userId,
-            @PathVariable WarehouseRole role) {
+            @PathVariable("warehouseId") Long warehouseId,
+            @PathVariable("userId") Long userId,
+            @PathVariable("role") WarehouseRole role) {
         warehouseAssignmentService.removeAssignment(warehouseId, userId, role);
         return ResponseEntity.noContent().build();
     }

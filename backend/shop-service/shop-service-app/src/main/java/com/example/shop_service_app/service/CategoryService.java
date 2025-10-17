@@ -5,6 +5,8 @@ import com.example.shop_service_client.dto.CategoryDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface CategoryService {
     CategoryDto getCategoryById(Long id);
     Void deleteCategoryById(Long id);
@@ -12,5 +14,5 @@ public interface CategoryService {
     CategoryDto createCategory(CategoryDto categoryDto);
     CategoryDto updateCategory(Long id,CategoryDto categoryDto);
     Page<CategoryDto> getAllCategories(Pageable pageable);
-
+    List<CategoryDto> getCategoriesByIds(List<Long> ids);
 }

@@ -17,11 +17,11 @@ public class ShelfController {
     private final ShelfService shelfService;
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<ShelfDto> getShelfById(@PathVariable Long id){
+    public ResponseEntity<ShelfDto> getShelfById(@PathVariable("id") Long id){
         return ResponseEntity.ok(shelfService.getShelfById(id));
     }
     @GetMapping("/code/{code}")
-    public ResponseEntity<ShelfDto> getShelfByCode(@PathVariable String code){
+    public ResponseEntity<ShelfDto> getShelfByCode(@PathVariable("code") String code){
         return ResponseEntity.ok(shelfService.getShelfByShelfCode(code));
     }
     @GetMapping("/all")
@@ -30,7 +30,7 @@ public class ShelfController {
         return ResponseEntity.ok(shelves);
     }
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteShelfById(@PathVariable Long id){
+    public ResponseEntity<Void> deleteShelfById(@PathVariable("id") Long id){
         shelfService.deleteShelfById(id);
         return ResponseEntity.noContent().build();
     }
@@ -39,7 +39,7 @@ public class ShelfController {
         return ResponseEntity.status(HttpStatus.CREATED).body(shelfService.createShelf( shelfDto));
     }
     @PutMapping("/update/{id}")
-    public ResponseEntity<ShelfDto> updateShelf(@PathVariable Long id,@Valid @RequestBody ShelfDto shelfDto){
+    public ResponseEntity<ShelfDto> updateShelf(@PathVariable("id") Long id,@Valid @RequestBody ShelfDto shelfDto){
         return ResponseEntity.ok(shelfService.updateShelf(id,shelfDto));
     }
 }

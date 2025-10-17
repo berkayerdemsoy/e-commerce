@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 @FeignClient(
         name = "warehouse-service",
         contextId = "warehouseAssignmentClient",
-        path = "/assignments",
+        path = "/api/assignments",
         url = "http://api-gateway:8080"
 )
 public interface WarehouseAssignmentClient {

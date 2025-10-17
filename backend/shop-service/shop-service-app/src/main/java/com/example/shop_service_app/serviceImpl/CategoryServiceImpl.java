@@ -12,6 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
@@ -65,6 +67,17 @@ public class CategoryServiceImpl implements CategoryService {
         Page<Category> categories = categoryRepository.findAll(pageable);
         return categories.map(categoryMapper::toDto);
     }
+    @Override
+    public List<CategoryDto> getCategoriesByIds(List<Long> ids) {
+        List<Category> categories = categoryRepository.findAllById(ids);
+        if (categories.isEmpty()) {
+            throw new NotFoundException("No categories found for given ids");
+        }
+        return categories.stream()
+                .map(categoryMapper::toDto)
+                .toList();
+    }
+
 
 
 }

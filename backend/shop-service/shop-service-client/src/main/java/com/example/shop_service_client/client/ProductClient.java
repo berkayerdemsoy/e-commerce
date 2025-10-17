@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 @FeignClient(
         name = "shop-service",
         contextId = "productClient",
-        path = "/shop/product",
+        path = "/api/product",
         url = "http://api-gateway:8080"
 )
 public interface ProductClient {

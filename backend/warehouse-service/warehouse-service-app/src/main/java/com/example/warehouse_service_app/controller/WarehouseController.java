@@ -24,13 +24,13 @@ public class WarehouseController {
     }
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<WarehouseDto> getWarehouseById(@PathVariable Long id){
+    public ResponseEntity<WarehouseDto> getWarehouseById(@PathVariable("id") Long id){
         WarehouseDto dto = warehouseService.getWarehouseById(id);
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/name/{name}")
-    public ResponseEntity<WarehouseDto> getWarehouseByName(@PathVariable String name){
+    public ResponseEntity<WarehouseDto> getWarehouseByName(@PathVariable("name") String name){
         WarehouseDto dto = warehouseService.getWarehouseByName(name);
         return ResponseEntity.ok(dto);
     }
@@ -40,12 +40,12 @@ public class WarehouseController {
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
     @PutMapping("/{id}")
-    public ResponseEntity<WarehouseDto> updateWarehouse(@PathVariable Long id,@Valid @RequestBody WarehouseDto warehouseDto){
+    public ResponseEntity<WarehouseDto> updateWarehouse(@PathVariable("id") Long id,@Valid @RequestBody WarehouseDto warehouseDto){
         WarehouseDto dto = warehouseService.updateWarehouse(id,warehouseDto);
         return ResponseEntity.ok(dto);
     }
     @DeleteMapping("{id}")
-    public ResponseEntity<Void> deleteWarehouse(@PathVariable Long id){
+    public ResponseEntity<Void> deleteWarehouse(@PathVariable("id") Long id){
         warehouseService.deleteWarehouse(id);
         return ResponseEntity.noContent().build();
     }
