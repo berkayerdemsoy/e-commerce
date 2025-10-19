@@ -1,0 +1,10 @@
+**/target/
+**/node_modules/
+**/.git/
+**/.idea/
+**/*.iml
+**/.DS_Store
+**/logs/
+**/.env
+.gitignore
+README.md

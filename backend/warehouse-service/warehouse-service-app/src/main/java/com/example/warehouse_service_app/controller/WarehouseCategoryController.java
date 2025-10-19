@@ -29,14 +29,14 @@ public class WarehouseCategoryController {
 
     @DeleteMapping("/remove/{warehouseId}/{categoryId}")
     public ResponseEntity<WarehouseCategoryDto> removeCategoryAssignFromWarehouse(
-            @PathVariable Long warehouseId,
-            @PathVariable Long categoryId) {
+            @PathVariable("warehouseId") Long warehouseId,
+            @PathVariable("categoryId") Long categoryId) {
         WarehouseCategoryDto dto = warehouseCategoryService.removeCategoryAssignFromWarehouse(categoryId, warehouseId);
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/{warehouseId}")
-    public ResponseEntity<List<WarehouseCategoryDto>> getCategoriesByWarehouse(@PathVariable Long warehouseId) {
+    public ResponseEntity<List<WarehouseCategoryDto>> getCategoriesByWarehouse(@PathVariable("warehouseId") Long warehouseId) {
         List<WarehouseCategoryDto> categories = warehouseCategoryService.getCategoriesByWarehouse(warehouseId);
         return ResponseEntity.ok(categories);
     }
