@@ -7,14 +7,12 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Builder
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class WarehouseCategoryDto {
-    private Long categoryId;
-    private Long warehouseId;
-    private Long assignedBy;
-    private LocalDateTime assignedAt;
-    private Boolean isActive;
+public class ProductShelfUpdateRequest {
+    private Long shelfId;
+    private Long productId;
+    private Integer newQuantity;
 }

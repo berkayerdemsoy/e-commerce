@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.FeignClientProperties;
 
 @SpringBootApplication
 @EnableFeignClients(basePackages = "com.example.user_service_client",
-        defaultConfiguration = FeignClientProperties.FeignClientConfiguration.class)
+        defaultConfiguration = com.example.common.config.FeignAutoConfiguration.class)
 public class UserServiceAppApplication {
 
 	public static void main(String[] args) {

@@ -7,8 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class WarehouseCategoryRequest {
-    private Long warehouseId;
-    private Long categoryId;
-    private Long assignedBy;
+public class ProductShelfResponse {
+    private Long productId;
+    private Long shelfId;
+    private int quantity;
+    private int minStockLevel;
 }
+

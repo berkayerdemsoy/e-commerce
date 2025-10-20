@@ -40,6 +40,20 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.CONFLICT)
                 .body(error);
     }
+    @ExceptionHandler({InvalidStockChangeException.class})
+    public ResponseEntity<Object> handlerInvalidStockChangeException(InvalidStockChangeException exception,
+                                                       HttpServletRequest request){
+        ErrorResponseDto error = new ErrorResponseDto(
+                "BAD_REQUEST",
+                exception.getMessage(),
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now(),
+                request.getRequestURI()
+        );
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(error);
+    }
 
     @ExceptionHandler({RuntimeException.class})
     public ResponseEntity<Object> handlerRuntimeException(RuntimeException exception,

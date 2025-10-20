@@ -71,6 +71,20 @@ spring:
               filters:
                 - RewritePath=/api/warehouse-categories/(?<segment>.*), /warehouse-categories/${segment}
 
+            - id: product-shelf-service-route
+              uri: http://warehouse-service:8080
+              predicates:
+                  - Path=/api/product-shelves/**
+              filters:
+                - RewritePath=/api/product-shelves/(?<segment>.*) , /product-shelves/${segment}
+
+            - id: stock-movement-service-route
+              uri: http://warehouse-service:8080
+              predicates:
+                - Path=/api/stock-movements/**
+              filters:
+                - RewritePath=/api/stock-movements/(?<segment>.*),/stock-movements/${segment}
+
 jwt:
   secret: "4WeV2ipAS1fvqNSGSB8wuvMWSB5qX1UbNcSgu5TJYa5pWLCz6DBHTC0dgPWj6UwNvrtofPA029qSS+m9b/rq5p6CXu+Rlw+rTHpe1SSusYvTAZ5D4SGq4kwfSFFdYiaQyhXyojdVGzBvRQqzW2yjS9oukZRlGlkQlhnhsYShdCo="
 logging:

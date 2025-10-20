@@ -8,7 +8,7 @@ import org.springframework.cloud.openfeign.FeignClientProperties;
 @SpringBootApplication
 @EnableFeignClients(basePackages = {"com.example.warehouse_service_client.client",
 "com.example.shop_service_client.client", "com.example.user_service_client.client"}
-,defaultConfiguration = FeignClientProperties.FeignClientConfiguration.class)
+,defaultConfiguration = com.example.common.config.FeignAutoConfiguration.class)
 public class WarehouseServiceAppApplication {
 
 	public static void main(String[] args) {

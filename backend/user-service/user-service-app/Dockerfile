@@ -23,6 +23,7 @@ WORKDIR /app
 
 # 1. ADIM: Önce POM dosyalarını kopyala (bağımlılıklar değişmedikçe bu katman cache'lenir)
 COPY pom.xml .
+COPY common/pom.xml common/
 COPY user-service/user-service-app/pom.xml user-service/user-service-app/
 COPY user-service/user-service-client/pom.xml user-service/user-service-client/
 COPY shop-service/shop-service-app/pom.xml shop-service/shop-service-app/
@@ -30,12 +31,13 @@ COPY shop-service/shop-service-client/pom.xml shop-service/shop-service-client/
 COPY api-gateway/pom.xml api-gateway/
 COPY warehouse-service/warehouse-service-app/pom.xml warehouse-service/warehouse-service-app/
 COPY warehouse-service/warehouse-service-client/pom.xml warehouse-service/warehouse-service-client/
-COPY common/pom.xml common/
+
 # 2. ADIM: Bağımlılıkları indir (bu katman cache'lenir, kod değişse bile bağımlılıklar değişmediyse tekrar inmez)
 RUN --mount=type=cache,target=/root/.m2 \
     mvn -pl user-service/user-service-app -am dependency:go-offline -DskipTests
 
 # 3. ADIM: Kaynak kodları kopyala (kod değişince sadece bu katman yeniden çalışır)
+COPY common/src common/src
 COPY user-service/user-service-app/src user-service/user-service-app/src
 COPY user-service/user-service-client/src user-service/user-service-client/src
 

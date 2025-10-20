@@ -5,16 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
-@Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class WarehouseCategoryDto {
-    private Long categoryId;
+@Builder
+public class ProductShelfFilterRequest {
     private Long warehouseId;
-    private Long assignedBy;
-    private LocalDateTime assignedAt;
-    private Boolean isActive;
+    private Long shelfId;
+    private Long productId;
+    private Integer initialQuantity;
+    private Integer minQuantity;
+    private Integer maxQuantity;
 }

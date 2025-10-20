@@ -22,6 +22,7 @@ WORKDIR /app
 
 # 1. POM dosyaları (DÜZELT: shop-service olmalı)
 COPY pom.xml .
+COPY common/pom.xml common/
 COPY user-service/user-service-app/pom.xml user-service/user-service-app/
 COPY user-service/user-service-client/pom.xml user-service/user-service-client/
 COPY shop-service/shop-service-app/pom.xml shop-service/shop-service-app/
@@ -29,13 +30,13 @@ COPY shop-service/shop-service-client/pom.xml shop-service/shop-service-client/
 COPY api-gateway/pom.xml api-gateway/
 COPY warehouse-service/warehouse-service-app/pom.xml warehouse-service/warehouse-service-app/
 COPY warehouse-service/warehouse-service-client/pom.xml warehouse-service/warehouse-service-client/
-COPY common/pom.xml common/
 
 # 2. Bağımlılıkları indir (DÜZELT: shop-service olmalı)
 RUN --mount=type=cache,target=/root/.m2 \
     mvn -pl shop-service/shop-service-app -am dependency:go-offline -DskipTests
 
 # 3. Kaynak kodlar (DÜZELT: shop-service olmalı)
+COPY common/src common/src
 COPY shop-service/shop-service-app/src shop-service/shop-service-app/src
 COPY shop-service/shop-service-client/src shop-service/shop-service-client/src
 

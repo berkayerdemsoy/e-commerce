@@ -36,6 +36,7 @@ RUN --mount=type=cache,target=/root/.m2 \
     mvn -pl warehouse-service/warehouse-service-app -am dependency:go-offline -DskipTests
 
 # 3. Kaynak kodlar
+COPY common/src common/src
 COPY user-service/user-service-client/src user-service/user-service-client/src
 COPY shop-service/shop-service-client/src shop-service/shop-service-client/src
 COPY warehouse-service/warehouse-service-app/src warehouse-service/warehouse-service-app/src
