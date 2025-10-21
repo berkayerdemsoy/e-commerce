@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.*;
 public interface StockMovementClient {
 
 
-    @PostMapping("/api/stock-movements")
+    @PostMapping
     StockMovementResponse addStockMovement(@RequestBody StockMovementRequest request);
 
 
-    @GetMapping("/api/stock-movements/{productId}")
+    @GetMapping("/{productId}")
     Page<StockMovementResponse> getAllStockMovements(
             @PathVariable("productId") Long productId,
             @RequestParam("page") int page,

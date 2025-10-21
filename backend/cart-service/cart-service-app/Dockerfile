@@ -1,26 +1,7 @@
-#FROM maven:3.9.9-eclipse-temurin-21 AS build
-#
-#WORKDIR /app
-#
-## Tüm projeyi kopyala (çünkü parent pom ve diğer modüller lazım)
-#COPY . .
-#
-## Sadece user-service-app ve bağımlı modüllerini build et
-#RUN mvn -pl warehouse-service/warehouse-service-app -am clean package -DskipTests
-#
-## 2. Run aşaması
-#FROM eclipse-temurin:21-jre-alpine
-#WORKDIR /app
-#
-## Sadece app modülünün jar'ını al
-#COPY --from=build /app/warehouse-service/warehouse-service-app/target/warehouse-service-app-0.0.1-SNAPSHOT.jar app.jar
-#
-#EXPOSE 8080
-#ENTRYPOINT ["java","-jar","app.jar"]
 FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# 1. POM dosyaları
+# 1. ADIM: Önce parent ve modül pom.xml dosyalarını kopyala
 COPY pom.xml .
 COPY common/pom.xml common/
 COPY user-service/user-service-app/pom.xml user-service/user-service-app/
@@ -33,28 +14,30 @@ COPY warehouse-service/warehouse-service-client/pom.xml warehouse-service/wareho
 COPY cart-service/cart-service-client/pom.xml cart-service/cart-service-client/
 COPY cart-service/cart-service-app/pom.xml cart-service/cart-service-app/
 
-# 2. Bağımlılıkları indir
+# 2. ADIM: Bağımlılıkları indir (cache kullanılır)
 RUN --mount=type=cache,target=/root/.m2 \
-    mvn -pl warehouse-service/warehouse-service-app -am dependency:go-offline -DskipTests
+    mvn -pl cart-service/cart-service-app -am dependency:go-offline -DskipTests
 
-# 3. Kaynak kodlar
+# 3. ADIM: Kaynak kodları kopyala
 COPY common/src common/src
 COPY user-service/user-service-client/src user-service/user-service-client/src
 COPY shop-service/shop-service-client/src shop-service/shop-service-client/src
 COPY warehouse-service/warehouse-service-app/src warehouse-service/warehouse-service-app/src
 COPY warehouse-service/warehouse-service-client/src warehouse-service/warehouse-service-client/src
+COPY cart-service/cart-service-client/src cart-service/cart-service-client/src
+COPY cart-service/cart-service-app/src cart-service/cart-service-app/src
 
-#bagimli oldugu modullerin client kodlari
+# 4. ADIM: Önce client build et
 RUN --mount=type=cache,target=/root/.m2 \
-    mvn -pl user-service/user-service-client,shop-service/shop-service-client,warehouse-service/warehouse-service-client \
-    clean install -DskipTests
+    mvn -pl cart-service/cart-service-client clean install -DskipTests
 
-# 4. Build
+# 5. ADIM: App build et
 RUN --mount=type=cache,target=/root/.m2 \
-    mvn -pl warehouse-service/warehouse-service-app -am clean package -DskipTests
+    mvn -pl cart-service/cart-service-app -am clean package -DskipTests
 
+# Runtime aşaması
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY --from=build /app/warehouse-service/warehouse-service-app/target/warehouse-service-app-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/cart-service/cart-service-app/target/cart-service-app-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java","-jar","app.jar"]

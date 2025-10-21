@@ -27,7 +27,7 @@ public class StockMovementController {
 
     @GetMapping("/{productId}")
     public ResponseEntity<Page<StockMovementResponse>> getAllStockMovements(
-            @PathVariable Long productId,
+            @PathVariable("productId") Long productId,
             Pageable pageable) {
         Page<StockMovementResponse> response = stockMovementService.getAllStockMovements(productId, pageable);
         return ResponseEntity.ok(response);

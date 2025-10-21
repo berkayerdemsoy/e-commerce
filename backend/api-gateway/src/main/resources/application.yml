@@ -83,7 +83,14 @@ spring:
               predicates:
                 - Path=/api/stock-movements/**
               filters:
-                - RewritePath=/api/stock-movements/(?<segment>.*),/stock-movements/${segment}
+                - RewritePath=/api/stock-movements(?<remaining>/?.*), /stock-movements${remaining}
+
+            - id: cart-service-route
+              uri: http://cart-service:8080
+              predicates:
+                  - Path=/api/cart/**
+              filters:
+                - RewritePath=/api/cart/(?<segment>.*) , /cart/${segment}
 
 jwt:
   secret: "4WeV2ipAS1fvqNSGSB8wuvMWSB5qX1UbNcSgu5TJYa5pWLCz6DBHTC0dgPWj6UwNvrtofPA029qSS+m9b/rq5p6CXu+Rlw+rTHpe1SSusYvTAZ5D4SGq4kwfSFFdYiaQyhXyojdVGzBvRQqzW2yjS9oukZRlGlkQlhnhsYShdCo="

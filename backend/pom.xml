@@ -19,6 +19,8 @@
 
     <modules>
         <module>common</module>
+        <module>cart-service/cart-service-app</module>
+        <module>cart-service/cart-service-client</module>
         <module>user-service/user-service-app</module>
         <module>user-service/user-service-client</module>
         <module>warehouse-service/warehouse-service-client</module>
@@ -26,6 +28,7 @@
         <module>shop-service/shop-service-app</module>
         <module>shop-service/shop-service-client</module>
         <module>api-gateway</module>
+
 
 
     </modules>

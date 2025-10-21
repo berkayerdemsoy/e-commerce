@@ -15,5 +15,7 @@ public interface WarehouseCategoryRepository extends JpaRepository<WarehouseCate
     List<WarehouseCategory> findByWarehouseIdAndIsActiveTrue(Long warehouseId);
     Optional<WarehouseCategory> findByWarehouseIdAndCategoryId(@Param("warehouseId") Long warehouseId,
                                                                @Param("categoryId") Long categoryId);
+    boolean existsByWarehouseIdAndCategoryIdAndIsActiveFalse(@Param("warehouseId") Long warehouseId,
+                                                             @Param("categoryId") Long categoryId);
 
 }

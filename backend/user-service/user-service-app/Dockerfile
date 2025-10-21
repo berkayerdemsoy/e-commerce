@@ -31,6 +31,8 @@ COPY shop-service/shop-service-client/pom.xml shop-service/shop-service-client/
 COPY api-gateway/pom.xml api-gateway/
 COPY warehouse-service/warehouse-service-app/pom.xml warehouse-service/warehouse-service-app/
 COPY warehouse-service/warehouse-service-client/pom.xml warehouse-service/warehouse-service-client/
+COPY cart-service/cart-service-client/pom.xml cart-service/cart-service-client/
+COPY cart-service/cart-service-app/pom.xml cart-service/cart-service-app/
 
 # 2. ADIM: Bağımlılıkları indir (bu katman cache'lenir, kod değişse bile bağımlılıklar değişmediyse tekrar inmez)
 RUN --mount=type=cache,target=/root/.m2 \

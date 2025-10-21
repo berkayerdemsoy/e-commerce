@@ -17,14 +17,14 @@ import org.springframework.web.bind.annotation.*;
 public interface ProductShelfClient {
 
 
-    @PostMapping("/api/product-shelves/assign")
+    @PostMapping("/assign")
     ProductShelfResponse assignProductToWarehouse(@RequestBody ProductShelfFilterRequest request);
 
 
-    @PutMapping("/api/product-shelves/update-stock")
+    @PutMapping("/update-stock")
     ProductShelfResponse updateStock(@RequestBody ProductShelfUpdateRequest request);
 
-    @GetMapping("/api/product-shelves/low-stock/{warehouseId}")
+    @GetMapping("/low-stock/{warehouseId}")
     Page<ProductShelfResponse> getLowStockAlerts(
             @PathVariable("warehouseId") Long warehouseId,
             Pageable pageable

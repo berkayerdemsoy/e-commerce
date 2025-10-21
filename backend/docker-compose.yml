@@ -1,4 +1,12 @@
 services:
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - user-network
+
   user-db:
     image: postgres:15
     container_name: user-db
@@ -13,6 +21,23 @@ services:
       - user-db-data:/var/lib/postgresql/data
     networks:
       - user-network
+
+  cart-service:
+    build:
+      context: .
+      dockerfile: cart-service/cart-service-app/Dockerfile
+    container_name: cart-service
+    restart: unless-stopped
+    ports:
+      - "8084:8080"
+    depends_on:
+      - redis
+    environment:
+       SPRING_REDIS_HOST: redis
+       SPRING_REDIS_PORT: 6379
+    networks:
+      - user-network
+
 
   pgadmin:
     image: dpage/pgadmin4

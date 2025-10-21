@@ -29,6 +29,13 @@ public class WarehouseCategoryServiceImpl implements WarehouseCategoryService {
         if(warehouseCategoryRepository.existsByWarehouseIdAndCategoryIdAndIsActiveTrue(warehouseCategoryRequest.getWarehouseId(), warehouseCategoryRequest.getCategoryId())){
             throw new AlreadyExistsException("Category already assigned to warehouse");
         }
+        if (warehouseCategoryRepository.existsByWarehouseIdAndCategoryIdAndIsActiveFalse(warehouseCategoryRequest.getWarehouseId(), warehouseCategoryRequest.getCategoryId())){
+            WarehouseCategory wc = warehouseCategoryRepository.findByWarehouseIdAndCategoryId(warehouseCategoryRequest.getWarehouseId(), warehouseCategoryRequest.getCategoryId())
+                    .orElseThrow(() -> new NotFoundException("Warehouse Category not found"));
+            wc.setIsActive(true);
+            WarehouseCategory activated = warehouseCategoryRepository.save(wc);
+            return mapper.toDto(activated);
+        }
         WarehouseCategory warehouseCategory = WarehouseCategory.builder()
                 .warehouseId(warehouseCategoryRequest.getWarehouseId())
                 .categoryId(warehouseCategoryRequest.getCategoryId())

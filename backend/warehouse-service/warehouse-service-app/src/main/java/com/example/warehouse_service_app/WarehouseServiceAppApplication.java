@@ -4,6 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClientProperties;
+import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @EnableFeignClients(basePackages = {"com.example.warehouse_service_client.client",
