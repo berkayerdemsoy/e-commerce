@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class CartRepository {
 
-    private final RedisTemplate<String,Object> redisTemplate;
+    private final RedisTemplate<String, Cart> redisTemplate;
 
     private String getKey(String userId) {
         return "cart:" + userId;
@@ -22,10 +22,11 @@ public class CartRepository {
     }
 
     public Cart getCart(String userId){
-        return (Cart) redisTemplate.opsForValue().get(getKey(userId));
+        return redisTemplate.opsForValue().get(getKey(userId));
     }
 
     public void deleteCart(String userId){
         redisTemplate.delete(getKey(userId));
     }
 }
+

@@ -2,8 +2,45 @@ services:
   redis:
     image: redis:7
     container_name: redis
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: on-failure
     ports:
       - "6379:6379"
+    networks:
+      - user-network
+
+  cart-service:
+    build:
+      context: .
+      dockerfile: cart-service/cart-service-app/Dockerfile
+    container_name: cart-service
+    restart: unless-stopped
+    ports:
+      - "8084:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+       SPRING_DATA_REDIS_HOST: redis
+       SPRING_DATA_REDIS_PORT: 6379
+    networks:
+      - user-network
+
+  order-service:
+    build:
+      context: .
+      dockerfile: order-service/order-service-app/Dockerfile
+    container_name: order-service
+    restart: unless-stopped
+    ports:
+      - "8085:8080"
+    depends_on:
+      - cart-service
+      - order-db
     networks:
       - user-network
 
@@ -21,23 +58,6 @@ services:
       - user-db-data:/var/lib/postgresql/data
     networks:
       - user-network
-
-  cart-service:
-    build:
-      context: .
-      dockerfile: cart-service/cart-service-app/Dockerfile
-    container_name: cart-service
-    restart: unless-stopped
-    ports:
-      - "8084:8080"
-    depends_on:
-      - redis
-    environment:
-       SPRING_REDIS_HOST: redis
-       SPRING_REDIS_PORT: 6379
-    networks:
-      - user-network
-
 
   pgadmin:
     image: dpage/pgadmin4
@@ -119,6 +139,21 @@ services:
     networks:
       - user-network
 
+  order-db:
+    image: postgres:15
+    container_name: order-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: orderdb
+      POSTGRES_USER: berkay
+      POSTGRES_PASSWORD: berkay
+    ports:
+      - "5435:5432"
+    volumes:
+      - order-db-data:/var/lib/postgresql/data
+    networks:
+      - user-network
+
   warehouse-service:
     build:
       context: .
@@ -166,6 +201,9 @@ volumes:
     driver: local
   warehouse-db-data:
     name: warehouse-db-data
+    driver: local
+  order-db-data:
+    name: order-db-data
     driver: local
 
 networks:

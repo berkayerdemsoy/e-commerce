@@ -13,6 +13,8 @@ COPY warehouse-service/warehouse-service-app/pom.xml warehouse-service/warehouse
 COPY warehouse-service/warehouse-service-client/pom.xml warehouse-service/warehouse-service-client/
 COPY cart-service/cart-service-client/pom.xml cart-service/cart-service-client/
 COPY cart-service/cart-service-app/pom.xml cart-service/cart-service-app/
+COPY order-service/order-service-app/pom.xml order-service/order-service-app/
+COPY order-service/order-service-client/pom.xml order-service/order-service-client/
 
 # 2. ADIM: Bağımlılıkları indir (cache kullanılır)
 RUN --mount=type=cache,target=/root/.m2 \
@@ -20,10 +22,6 @@ RUN --mount=type=cache,target=/root/.m2 \
 
 # 3. ADIM: Kaynak kodları kopyala
 COPY common/src common/src
-COPY user-service/user-service-client/src user-service/user-service-client/src
-COPY shop-service/shop-service-client/src shop-service/shop-service-client/src
-COPY warehouse-service/warehouse-service-app/src warehouse-service/warehouse-service-app/src
-COPY warehouse-service/warehouse-service-client/src warehouse-service/warehouse-service-client/src
 COPY cart-service/cart-service-client/src cart-service/cart-service-client/src
 COPY cart-service/cart-service-app/src cart-service/cart-service-app/src
 

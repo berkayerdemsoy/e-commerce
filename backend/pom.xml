@@ -19,6 +19,8 @@
 
     <modules>
         <module>common</module>
+        <module>order-service/order-service-app</module>
+        <module>order-service/order-service-client</module>
         <module>cart-service/cart-service-app</module>
         <module>cart-service/cart-service-client</module>
         <module>user-service/user-service-app</module>

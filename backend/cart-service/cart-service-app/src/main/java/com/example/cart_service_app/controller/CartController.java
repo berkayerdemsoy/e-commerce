@@ -7,8 +7,13 @@ import com.example.cart_service_app.service.CartService;
 import com.example.cart_service_client.dto.CartDTO;
 import com.example.cart_service_client.dto.CartItemDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Recover;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/cart")
@@ -17,6 +22,7 @@ public class CartController {
 
     private final CartService cartService;
     private final CartMapper cartMapper;
+
 
     @GetMapping("/{userId}")
     public ResponseEntity<CartDTO> getCart(@PathVariable("userId") String userId) {
@@ -51,5 +57,12 @@ public class CartController {
     public ResponseEntity<Void> clearCart(@PathVariable("userId") String userId) {
         cartService.clearCart(userId);
         return ResponseEntity.noContent().build();
+    }
+
+
+    @Recover
+    public Cart recover(RedisConnectionFailureException e, String userId) {
+        // Redis hiç bağlanamazsa fallback davranışı
+        return new Cart(userId, new ArrayList<>(), LocalDateTime.now());
     }
 }

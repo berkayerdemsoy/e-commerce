@@ -32,6 +32,8 @@ COPY warehouse-service/warehouse-service-app/pom.xml warehouse-service/warehouse
 COPY warehouse-service/warehouse-service-client/pom.xml warehouse-service/warehouse-service-client/
 COPY cart-service/cart-service-client/pom.xml cart-service/cart-service-client/
 COPY cart-service/cart-service-app/pom.xml cart-service/cart-service-app/
+COPY order-service/order-service-app/pom.xml order-service/order-service-app/
+COPY order-service/order-service-client/pom.xml order-service/order-service-client/
 
 # 2. Bağımlılıkları indir (DÜZELT: shop-service olmalı)
 RUN --mount=type=cache,target=/root/.m2 \

@@ -2,9 +2,13 @@ package com.example.cart_service_app.serviceImpl;
 
 import com.example.cart_service_app.entity.Cart;
 import com.example.cart_service_app.entity.CartItem;
+import com.example.cart_service_app.exception.NotFoundException;
 import com.example.cart_service_app.repository.CartRepository;
 import com.example.cart_service_app.service.CartService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.RedisConnectionFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,14 +30,19 @@ public class CartServiceImpl implements CartService {
         }
         return cart;
     }
-
+    @Retryable(
+            value = { RedisConnectionFailureException.class },
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 2000, multiplier = 2)
+    )
     @Override
     public Cart addItem(String userId, CartItem item) {
+
         Cart cart = getCart(userId);
         CartItem existing = cart.getItems().stream()
                 .filter(ci -> ci.getProductId().equals(item.getProductId()))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new NotFoundException("Product Not Found"));
 
         if (existing != null) {
             existing.setQuantity(existing.getQuantity() + item.getQuantity());
