@@ -93,6 +93,7 @@ services:
       SPRING_JPA_SHOW_SQL: "true"
     networks:
       - user-network
+
   gateway-service:
     build:
       context: ./api-gateway
