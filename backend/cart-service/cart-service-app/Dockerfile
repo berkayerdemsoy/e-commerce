@@ -22,12 +22,13 @@ RUN --mount=type=cache,target=/root/.m2 \
 
 # 3. ADIM: Kaynak kodları kopyala
 COPY common/src common/src
+COPY shop-service/shop-service-client/src shop-service/shop-service-client/src
 COPY cart-service/cart-service-client/src cart-service/cart-service-client/src
 COPY cart-service/cart-service-app/src cart-service/cart-service-app/src
 
 # 4. ADIM: Önce client build et
 RUN --mount=type=cache,target=/root/.m2 \
-    mvn -pl cart-service/cart-service-client clean install -DskipTests
+    mvn -pl shop-service/shop-service-client,cart-service/cart-service-client clean install -DskipTests
 
 # 5. ADIM: App build et
 RUN --mount=type=cache,target=/root/.m2 \

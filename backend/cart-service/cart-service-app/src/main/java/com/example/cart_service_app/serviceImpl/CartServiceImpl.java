@@ -5,6 +5,8 @@ import com.example.cart_service_app.entity.CartItem;
 import com.example.cart_service_app.exception.NotFoundException;
 import com.example.cart_service_app.repository.CartRepository;
 import com.example.cart_service_app.service.CartService;
+import com.example.shop_service_client.client.ProductClient;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.retry.annotation.Backoff;
@@ -19,6 +21,7 @@ import java.util.ArrayList;
 public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
+    private final ProductClient productClient;
     private static final long CART_TTL_MINUTES = 30;
 
     @Override
@@ -38,22 +41,26 @@ public class CartServiceImpl implements CartService {
     @Override
     public Cart addItem(String userId, CartItem item) {
 
-        Cart cart = getCart(userId);
-        CartItem existing = cart.getItems().stream()
-                .filter(ci -> ci.getProductId().equals(item.getProductId()))
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("Product Not Found"));
+        try {
+            productClient.getProductById(Long.parseLong(item.getProductId()));
+        }catch (FeignException.NotFound e){
+            throw new NotFoundException("Product not found:" + item.getProductId());
 
-        if (existing != null) {
-            existing.setQuantity(existing.getQuantity() + item.getQuantity());
-        } else {
-            cart.getItems().add(item);
         }
 
+        Cart cart = getCart(userId);
+        cart.getItems().stream()
+                .filter(ci -> ci.getProductId().equals(item.getProductId()))
+                .findFirst()
+                .ifPresentOrElse(
+                        existingItem -> existingItem.setQuantity(existingItem.getQuantity() + item.getQuantity()),
+                        () -> cart.getItems().add(item)
+                );
         cart.setUpdatedAt(LocalDateTime.now());
         cartRepository.saveCart(cart, CART_TTL_MINUTES);
         return cart;
     }
+
 
     @Override
     public Cart updateQuantity(String userId, String productId, int quantity) {

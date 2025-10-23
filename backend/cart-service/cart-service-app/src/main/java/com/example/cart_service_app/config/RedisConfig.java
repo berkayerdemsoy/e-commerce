@@ -14,7 +14,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
-        @Bean
+        @Bean(name = "cartRedisTemplate")
         public RedisTemplate<String, Cart> redisTemplate(RedisConnectionFactory connectionFactory) {
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());

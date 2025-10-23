@@ -99,6 +99,12 @@ spring:
               filters:
                 - RewritePath=/api/order/(?<segment>.*) , /order/${segment}
 
+            - id: payment-service-route
+              uri: http://payment-service:8080
+              predicates:
+                - Path=/api/payment/**
+              filters:
+                - RewritePath=/api/payment(?<remaining>/?.*), /payment${remaining}
 jwt:
   secret: "4WeV2ipAS1fvqNSGSB8wuvMWSB5qX1UbNcSgu5TJYa5pWLCz6DBHTC0dgPWj6UwNvrtofPA029qSS+m9b/rq5p6CXu+Rlw+rTHpe1SSusYvTAZ5D4SGq4kwfSFFdYiaQyhXyojdVGzBvRQqzW2yjS9oukZRlGlkQlhnhsYShdCo="
 logging:

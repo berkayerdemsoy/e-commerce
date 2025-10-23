@@ -7,7 +7,8 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.retry.annotation.EnableRetry;
 
 @SpringBootApplication
-@EnableFeignClients(basePackages = "com.example.cart_service_client.client",
+@EnableFeignClients(basePackages = {"com.example.cart_service_client.client",
+        "com.example.shop_service_client.client"},
         defaultConfiguration = com.example.common.config.FeignAutoConfiguration.class)
 @EnableRetry
 public class CartServiceAppApplication {

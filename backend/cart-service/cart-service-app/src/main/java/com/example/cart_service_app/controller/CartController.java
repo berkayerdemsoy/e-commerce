@@ -41,7 +41,7 @@ public class CartController {
     @PutMapping("/{userId}/items/{productId}")
     public ResponseEntity<CartDTO> updateQuantity(@PathVariable("userId") String userId,
                                                   @PathVariable("productId") String productId,
-                                                  @RequestParam int quantity) {
+                                                  @RequestParam("quantity") int quantity) {
         Cart cart = cartService.updateQuantity(userId, productId, quantity);
         return ResponseEntity.ok(cartMapper.toDto(cart));
     }
