@@ -1,5 +1,6 @@
 package com.example.payment_service_app.exception;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,10 +11,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IdempotencyException.class)
     public ResponseEntity<?> handleIdempotency(IdempotencyException ex) {
+        // log bağlamı ekleyin
+        LoggerFactory.getLogger(getClass()).info("Idempotency exception: paymentId={}, status={}",
+                ex.getPaymentId(), ex.getStatus());
+
+        Object paymentId = ex.getPaymentId() != null ? ex.getPaymentId() : null;
+        String status = ex.getStatus() != null ? ex.getStatus().name() : null;
+
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ErrorResp("IDEMPOTENT_REQUEST", ex.getMessage(),
-                        ex.getPaymentId(), ex.getStatus().name()));
+                .body(new ErrorResp("IDEMPOTENT_REQUEST", ex.getMessage(), paymentId, status));
     }
+
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<?> handleNotFound(NotFoundException ex) {

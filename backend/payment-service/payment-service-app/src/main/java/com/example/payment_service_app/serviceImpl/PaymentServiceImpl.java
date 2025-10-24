@@ -42,7 +42,7 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = Payment.builder()
                 .paymentId(paymentId)
                 .userId(request.getUserId())
-                .cartId(Long.parseLong(request.getCartId()))
+                .cartId(request.getCartId())
                 .amount(request.getAmount())
                 .status(PaymentStatus.PENDING)
                 .idempotencyKey(request.getIdempotencyKey())

@@ -15,6 +15,8 @@ COPY cart-service/cart-service-client/pom.xml cart-service/cart-service-client/
 COPY cart-service/cart-service-app/pom.xml cart-service/cart-service-app/
 COPY order-service/order-service-app/pom.xml order-service/order-service-app/
 COPY order-service/order-service-client/pom.xml order-service/order-service-client/
+COPY payment-service/payment-service-client/pom.xml payment-service/payment-service-client/
+COPY payment-service/payment-service-app/pom.xml payment-service/payment-service-app/
 
 # 2. ADIM: Bağımlılıkları indir (cache kullanılır)
 RUN --mount=type=cache,target=/root/.m2 \

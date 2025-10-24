@@ -4,6 +4,7 @@ package com.example.payment_service_app.outbox;
 import com.example.payment_service_app.entity.OutboxMessage;
 import com.example.payment_service_app.repository.OutboxRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,10 +18,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OutboxRelay {
 
-    private final OutboxRepository outboxRepository;
+    @Qualifier("kafkaPaymentTemplate")
     private final KafkaTemplate<String, String> kafkaTemplate;
+    private final OutboxRepository outboxRepository;
 
-    @Scheduled(fixedDelayString = "${outbox.relay.interval:2000}")
+
+
+    @Scheduled(fixedDelayString = "${outbox.relay.interval:30000}")
     @Transactional
     public void relay() {
         List<OutboxMessage> msgs = outboxRepository.findByProcessedFalseOrderByCreatedAtAsc(PageRequest.of(0, 20));
