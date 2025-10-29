@@ -1,11 +1,13 @@
 package com.example.payment_service_app.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -14,7 +16,8 @@ public class GlobalExceptionHandler {
         // log bağlamı ekleyin
         LoggerFactory.getLogger(getClass()).info("Idempotency exception: paymentId={}, status={}",
                 ex.getPaymentId(), ex.getStatus());
-
+        log.info("Idempotency exception: paymentId={}, status={}",
+                ex.getPaymentId(), ex.getStatus());
         Object paymentId = ex.getPaymentId() != null ? ex.getPaymentId() : null;
         String status = ex.getStatus() != null ? ex.getStatus().name() : null;
 
@@ -37,12 +40,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PaymentProcessingException.class)
     public ResponseEntity<?> handleProcessing(PaymentProcessingException ex) {
+        log.error("Payment processing error", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResp("PAYMENT_ERROR", ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGeneric(Exception ex) {
+        log.error("UNHANDLED EXCEPTION - Type: {}, Message: {}",
+                ex.getClass().getName(), ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResp("INTERNAL_ERROR", "Beklenmeyen hata"));
     }

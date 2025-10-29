@@ -19,3 +19,9 @@ app:
   kafka:
     topics:
       paymentTopic: payment-topic
+
+logging:
+  level:
+    com.example.payment_service_app: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG

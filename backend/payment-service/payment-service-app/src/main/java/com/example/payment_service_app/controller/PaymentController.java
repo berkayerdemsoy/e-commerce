@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/payment")
 @RequiredArgsConstructor
@@ -20,6 +22,9 @@ public class PaymentController {
 
     @PostMapping
     public ResponseEntity<PaymentResponse> startPayment(@Valid @RequestBody PaymentRequest request) {
+        if(request.getIdempotencyKey()==null || request.getIdempotencyKey().isEmpty()){
+            request.setIdempotencyKey(UUID.randomUUID().toString());
+        }
         PaymentResponse resp = paymentService.startPayment(request);
         return ResponseEntity.status(201).body(resp);
 

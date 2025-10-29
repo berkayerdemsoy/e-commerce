@@ -15,11 +15,13 @@ import com.example.payment_service_client.dto.PaymentResponse;
 import com.example.payment_service_client.enums.PaymentStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
@@ -32,13 +34,30 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     @Override
     public PaymentResponse startPayment(PaymentRequest request) {
+        log.info("=== PAYMENT START === userId={}, cartId={}, amount={}, idempotencyKey={}",
+                request.getUserId(), request.getCartId(), request.getAmount(), request.getIdempotencyKey());
 
-        paymentRepository.findByIdempotencyKey(request.getIdempotencyKey())
-                .ifPresent(existing -> {
-                    throw new IdempotencyException(existing.getPaymentId(),existing.getStatus());
-                });
+//        paymentRepository.findByIdempotencyKey(request.getIdempotencyKey())
+//                .ifPresent(existing -> {
+//                    throw new IdempotencyException(existing.getPaymentId(),existing.getStatus());
+//                });
+        try {
+            paymentRepository.findByIdempotencyKey(request.getIdempotencyKey())
+                    .ifPresent(existing -> {
+                        log.warn("Duplicate payment detected: paymentId={}", existing.getPaymentId());
+                        throw new IdempotencyException(existing.getPaymentId(), existing.getStatus());
+                    });
+        } catch (IdempotencyException e) {
+            log.error("IdempotencyException thrown", e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Error during idempotency check", e);
+            throw new PaymentProcessingException("Idempotency check failed", e);
+        }
+
 
         UUID paymentId = UUID.randomUUID();
+        log.info("Generated paymentId: {}", paymentId);
         Payment payment = Payment.builder()
                 .paymentId(paymentId)
                 .userId(request.getUserId())
@@ -49,43 +68,107 @@ public class PaymentServiceImpl implements PaymentService {
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
-        paymentRepository.save(payment);
+//        paymentRepository.save(payment);
 
-        OutboxMessage init = OutboxMessage.builder()
-                .aggregateType("PAYMENT")
-                .aggregateId(paymentId.toString())
-                .type("payment.initiated")
-                .payload("{\"paymentId\":\"" + paymentId + "\"}")
-                .processed(false)
-                .createdAt(LocalDateTime.now())
-                .build();
-        outboxRepository.save(init);
+        try {
+            paymentRepository.save(payment);
+            log.info("Payment saved: {}", paymentId);
+        } catch (Exception e) {
+            log.error("Failed to save payment: {}", paymentId, e);
+            throw new PaymentProcessingException("Payment kayıt hatası", e);
+        }
+//        OutboxMessage init = OutboxMessage.builder()
+//                .aggregateType("PAYMENT")
+//                .aggregateId(paymentId.toString())
+//                .type("payment.initiated")
+//                .payload("{\"paymentId\":\"" + paymentId + "\"}")
+//                .processed(false)
+//                .createdAt(LocalDateTime.now())
+//                .build();
+//        outboxRepository.save(init);
+
+        // Outbox kayıt
+        try {
+            OutboxMessage init = OutboxMessage.builder()
+                    .aggregateType("PAYMENT")
+                    .aggregateId(paymentId.toString())
+                    .type("payment.initiated")
+                    .payload("{\"paymentId\":\"" + paymentId + "\"}")
+                    .processed(false)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            outboxRepository.save(init);
+            log.info("Outbox init message saved");
+        } catch (Exception e) {
+            log.error("Failed to save outbox init", e);
+        }
+
+//        PaymentResult result;
+//        try{
+//            result = paymentProcessor.process(payment);
+//        }catch (Exception e){
+//            throw new PaymentProcessingException("Odeme isleminde hata!",e);
+//        }
 
         PaymentResult result;
-        try{
+        try {
+            log.info("Processing payment: {}", paymentId);
             result = paymentProcessor.process(payment);
-        }catch (Exception e){
-            throw new PaymentProcessingException("Odeme isleminde hata!",e);
+            log.info("Payment processed: success={}", result.isSuccess());
+        } catch (Exception e) {
+            log.error("Payment processor failed: {}", paymentId, e);
+            throw new PaymentProcessingException("Ödeme işleminde hata!", e);
         }
 
 
-        payment.setStatus(result.isSuccess() ? PaymentStatus.SUCCESS : PaymentStatus.FAILED);
-        payment.setProviderResponse(result.getProviderResponse());
-        payment.setUpdatedAt(LocalDateTime.now());
-        paymentRepository.save(payment);
+//        payment.setStatus(result.isSuccess() ? PaymentStatus.SUCCESS : PaymentStatus.FAILED);
+//        payment.setProviderResponse(result.getProviderResponse());
+//        payment.setUpdatedAt(LocalDateTime.now());
+//        paymentRepository.save(payment);
 
-        OutboxMessage resultOutbox = OutboxMessage.builder()
-                .aggregateType("PAYMENT")
-                .aggregateId(paymentId.toString())
-                .type(result.isSuccess() ? "payment.succeeded" : "payment.failed")
-                .payload(buildPayload(payment))
-                .processed(false)
-                .createdAt(LocalDateTime.now())
-                .build();
-        outboxRepository.save(resultOutbox);
+        // Status güncelleme
+        try {
+            payment.setStatus(result.isSuccess() ? PaymentStatus.SUCCESS : PaymentStatus.FAILED);
+            payment.setProviderResponse(result.getProviderResponse());
+            payment.setUpdatedAt(LocalDateTime.now());
+            paymentRepository.save(payment);
+            log.info("Payment status updated: {} -> {}", paymentId, payment.getStatus());
+        } catch (Exception e) {
+            log.error("Failed to update payment status", e);
+            throw new PaymentProcessingException("Status güncelleme hatası", e);
+        }
+
+//        OutboxMessage resultOutbox = OutboxMessage.builder()
+//                .aggregateType("PAYMENT")
+//                .aggregateId(paymentId.toString())
+//                .type(result.isSuccess() ? "payment.succeeded" : "payment.failed")
+//                .payload(buildPayload(payment))
+//                .processed(false)
+//                .createdAt(LocalDateTime.now())
+//                .build();
+//        outboxRepository.save(resultOutbox);
+//        return paymentMapper.toResponse(payment);
+
+        try {
+            OutboxMessage resultOutbox = OutboxMessage.builder()
+                    .aggregateType("PAYMENT")
+                    .aggregateId(paymentId.toString())
+                    .type(result.isSuccess() ? "payment.succeeded" : "payment.failed")
+                    .payload(buildPayload(payment))
+                    .processed(false)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            outboxRepository.save(resultOutbox);
+            log.info("Outbox result message saved");
+        } catch (Exception e) {
+            log.error("Failed to save outbox result", e);
+        }
+
+        log.info("=== PAYMENT COMPLETE === paymentId={}, status={}", paymentId, payment.getStatus());
         return paymentMapper.toResponse(payment);
-
     }
+
+
     private String buildPayload(Payment p) {
         return String.format("{\"paymentId\":\"%s\",\"userId\":%d,\"cartId\":%d,\"amount\":%s,\"status\":\"%s\"}",
                 p.getPaymentId(), p.getUserId(), p.getCartId(), p.getAmount(), p.getStatus().name());
