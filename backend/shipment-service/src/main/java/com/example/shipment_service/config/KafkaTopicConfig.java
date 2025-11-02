@@ -1,4 +1,4 @@
-package com.example.payment_service_app.config;
+package com.example.shipment_service.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,19 +9,23 @@ import org.springframework.kafka.config.TopicBuilder;
 @Configuration
 public class KafkaTopicConfig {
 
-    @Value("${app.kafka.topics.paymentTopic}")
-    private String paymentTopic;
+    @Value("${app.kafka.topics.shipmentTopic}")
+    private String shipmentTopic;
 
     @Bean
-    public NewTopic paymentTopic() {
-        return TopicBuilder.name(paymentTopic)
+    public NewTopic shipmentTopic() {
+        return TopicBuilder.name(shipmentTopic)
                 .partitions(3)
                 .replicas(1)
                 .build();
     }
 
     @Bean
-    public NewTopic paymentTopicDlq() {
-        return TopicBuilder.name(paymentTopic + ".DLQ").partitions(1).replicas(1).build();
+    public NewTopic shipmentTopicDlq() {
+        return TopicBuilder.name(shipmentTopic + ".DLQ")
+                .partitions(1)
+                .replicas(1)
+                .build();
     }
 }
+

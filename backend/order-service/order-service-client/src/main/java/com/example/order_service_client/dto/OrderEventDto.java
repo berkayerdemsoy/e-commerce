@@ -1,4 +1,4 @@
-package com.example.payment_service_client.dto;
+package com.example.order_service_client.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,10 +11,9 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PaymentRequest {
-    private Long cartId;
+public class OrderEventDto {
+    private Long orderId;
     private Long userId;
-    private BigDecimal amount;
-    private String paymentMethod;
-    private String idempotencyKey;
+    private BigDecimal totalAmount;
+    private String eventType;
 }

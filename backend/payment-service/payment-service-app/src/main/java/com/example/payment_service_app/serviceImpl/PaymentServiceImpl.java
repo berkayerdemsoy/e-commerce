@@ -170,7 +170,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 
     private String buildPayload(Payment p) {
-        return String.format("{\"paymentId\":\"%s\",\"userId\":%d,\"cartId\":%d,\"amount\":%s,\"status\":\"%s\"}",
-                p.getPaymentId(), p.getUserId(), p.getCartId(), p.getAmount(), p.getStatus().name());
+        return String.format("{\"paymentId\":\"%s\",\"userId\":%d,\"cartId\":%d,\"amount\":%s,\"status\":\"%s\",\"eventType\":\"%s\"}",
+                p.getPaymentId(), p.getUserId(), p.getCartId(), p.getAmount(), p.getStatus().name() , p.getStatus() == PaymentStatus.SUCCESS ? "payment.succeeded" : "payment.failed" );
     }
 }

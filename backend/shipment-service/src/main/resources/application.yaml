@@ -1,12 +1,13 @@
 spring:
   application:
-    name: order-service-app
+    name: shipment-service
+
 
 
   kafka:
     bootstrap-servers: kafka:9092
     consumer:
-      group-id: order-service-group
+      group-id: shipment-service-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
@@ -21,16 +22,15 @@ spring:
       properties:
         linger.ms: 10
         batch.size: 16384
-
 app:
   kafka:
     topics:
-      paymentTopic: payment-topic
+      shipmentTopic: shipment-topic
       orderTopic: order-topic
-    consumer-group-id:  order-service-group
+
 
 logging:
   level:
-    com.example.order_service_app: DEBUG
+    com.example.shipment_service: DEBUG
     org.springframework.web: DEBUG
     org.springframework.kafka: DEBUG

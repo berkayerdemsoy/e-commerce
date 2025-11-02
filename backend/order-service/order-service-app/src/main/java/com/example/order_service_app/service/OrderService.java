@@ -3,6 +3,7 @@ package com.example.order_service_app.service;
 
 import com.example.order_service_client.dto.OrderRequest;
 import com.example.order_service_client.dto.OrderResponse;
+import com.example.order_service_client.dto.PaymentEventDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -12,4 +13,5 @@ public interface OrderService {
  OrderResponse updateOrderById(Long id , OrderRequest orderRequest);
  Page<OrderResponse> getAllOrders(Pageable pageable);
  OrderResponse createOrder(OrderRequest orderRequest);
+ OrderResponse createOrderFromPayment(PaymentEventDto paymentEventDto);
 }

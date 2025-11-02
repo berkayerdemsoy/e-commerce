@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.*;
 @FeignClient(
         name = "cart-service",
         contextId = "cartClient",
-        url = "/api/cart",
-        path = "http://api-gateway:8080"
+        path = "/api/cart",
+        url = "http://api-gateway:8080"
 )
 public interface CartClient {
 

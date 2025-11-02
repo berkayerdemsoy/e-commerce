@@ -30,6 +30,42 @@ services:
     networks:
       - user-network
 
+  shipment-service:
+    build:
+      context: .
+      dockerfile: shipment-service/shipment-service-app/Dockerfile
+    container_name: shipment-service
+    restart: unless-stopped
+    ports:
+      - "8087:8080"
+    depends_on:
+       kafka:
+          condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://shipment-db:5432/shipmentdb
+      SPRING_DATASOURCE_USERNAME: berkay
+      SPRING_DATASOURCE_PASSWORD: berkay
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+    networks:
+      - user-network
+
+  shipment-db:
+    image: postgres:15
+    container_name: shipment-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shipmentdb
+      POSTGRES_USER: berkay
+      POSTGRES_PASSWORD: berkay
+    ports:
+      - "5438:5432"
+    volumes:
+      - shipment-db-data:/var/lib/postgresql/data
+    networks:
+      - user-network
+
+
   order-service:
     build:
       context: .
@@ -313,6 +349,9 @@ volumes:
     driver: local
   payment-db-data:
     name: payment-db-data
+    driver: local
+  shipment-db-data:
+    name: shipment-db-data
     driver: local
 
 networks:

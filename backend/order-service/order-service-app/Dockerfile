@@ -27,10 +27,12 @@ RUN --mount=type=cache,target=/root/.m2 \
 COPY common/src common/src
 COPY order-service/order-service-client/src order-service/order-service-client/src
 COPY order-service/order-service-app/src order-service/order-service-app/src
+COPY cart-service/cart-service-client/src cart-service/cart-service-client/src
+
 
 
 RUN --mount=type=cache,target=/root/.m2 \
-    mvn -pl order-service/order-service-client \
+    mvn -pl cart-service/cart-service-client,order-service/order-service-client \
     clean install -DskipTests
 
 # 4. Build (DÜZELT: shop-service olmalı)

@@ -4,6 +4,7 @@ spring:
 
   kafka:
     bootstrap-servers: kafka:9092
+    acks: all
     consumer:
       group-id: payment-service-group
       auto-offset-reset: earliest
@@ -11,10 +12,12 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: '*'
+       // Enable idempotence for exactly-once delivery, acks all ile birlikte kullanilir.
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-
+      properties:
+        enable.idempotence: true
 app:
   kafka:
     topics:

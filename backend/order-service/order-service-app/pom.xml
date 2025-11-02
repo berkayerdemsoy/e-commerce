@@ -96,6 +96,11 @@
         </dependency>
         <dependency>
             <groupId>com.example</groupId>
+            <artifactId>cart-service-client</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.example</groupId>
             <artifactId>common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
