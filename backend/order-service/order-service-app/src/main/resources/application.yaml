@@ -27,7 +27,7 @@ app:
     topics:
       paymentTopic: payment-topic
       orderTopic: order-topic
-    consumer-group-id:  order-service-group
+
 
 logging:
   level:

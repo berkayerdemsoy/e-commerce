@@ -16,6 +16,7 @@ import com.example.payment_service_client.enums.PaymentStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -30,6 +31,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final OutboxRepository outboxRepository;
     private final PaymentMapper paymentMapper;
     private final PaymentProcessor paymentProcessor;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
     @Transactional
     @Override
@@ -159,10 +161,12 @@ public class PaymentServiceImpl implements PaymentService {
                     .createdAt(LocalDateTime.now())
                     .build();
             outboxRepository.save(resultOutbox);
+            kafkaTemplate.send("payment-topic",resultOutbox.getPayload());
             log.info("Outbox result message saved");
         } catch (Exception e) {
             log.error("Failed to save outbox result", e);
         }
+
 
         log.info("=== PAYMENT COMPLETE === paymentId={}, status={}", paymentId, payment.getStatus());
         return paymentMapper.toResponse(payment);
