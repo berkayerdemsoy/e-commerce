@@ -33,7 +33,7 @@ services:
   shipment-service:
     build:
       context: .
-      dockerfile: shipment-service/shipment-service-app/Dockerfile
+      dockerfile: shipment-service/Dockerfile
     container_name: shipment-service
     restart: unless-stopped
     ports:

@@ -36,6 +36,7 @@ COPY order-service/order-service-app/pom.xml order-service/order-service-app/
 COPY order-service/order-service-client/pom.xml order-service/order-service-client/
 COPY payment-service/payment-service-client/pom.xml payment-service/payment-service-client/
 COPY payment-service/payment-service-app/pom.xml payment-service/payment-service-app/
+COPY shipment-service/pom.xml shipment-service/
 
 # 2. Bağımlılıkları indir
 RUN --mount=type=cache,target=/root/.m2 \
