@@ -103,7 +103,7 @@
       <module name="common" options="" />
       <module name="order-service" options="-parameters" />
       <module name="payment-service" options="-parameters" />
-      <module name="shipment-service" options="-parameters" />
+      <module name="shipment-service" options="" />
       <module name="shop-service" options="-parameters" />
       <module name="user-service" options="-parameters" />
       <module name="user-service-app" options="" />

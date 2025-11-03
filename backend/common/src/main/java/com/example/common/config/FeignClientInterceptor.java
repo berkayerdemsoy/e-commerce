@@ -50,6 +50,5 @@ public class FeignClientInterceptor implements RequestInterceptor {
             log.error("Feign Interceptor : Error Obtaining system token" + e);
         }
 
-
     }
 }

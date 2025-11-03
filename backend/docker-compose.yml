@@ -27,6 +27,13 @@ services:
     environment:
        SPRING_DATA_REDIS_HOST: redis
        SPRING_DATA_REDIS_PORT: 6379
+       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_PROVIDER: keycloak
+       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_CLIENT-ID: cart-service-client
+       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_CLIENT-SECRET: ${CART_SERVICE_SECRET}
+       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_AUTHORIZATION-GRANT-TYPE: client_credentials
+       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_SCOPE: internal_api
+       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_TOKEN-URI: http://keycloak:8080/realms/microservices/protocol/openid-connect/token
+
     networks:
       - user-network
 
@@ -47,6 +54,13 @@ services:
       SPRING_DATASOURCE_PASSWORD: berkay
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_PROVIDER: keycloak
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_CLIENT-ID: shipment-service-client
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_CLIENT-SECRET: ${SHIPMENT_SERVICE_SECRET}
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_AUTHORIZATION-GRANT-TYPE: client_credentials
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_SCOPE: internal_api
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_TOKEN-URI: http://keycloak:8080/realms/microservices/protocol/openid-connect/token
+
     networks:
       - user-network
 
@@ -80,9 +94,17 @@ services:
       SPRING_DATASOURCE_PASSWORD: berkay
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_PROVIDER: keycloak
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_CLIENT-ID: order-service-client
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_CLIENT-SECRET: ${ORDER_SERVICE_SECRET}
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_AUTHORIZATION-GRANT-TYPE: client_credentials
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_SCOPE: internal_api
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_TOKEN-URI: http://keycloak:8080/realms/microservices/protocol/openid-connect/token
+
     depends_on:
       - cart-service
       - order-db
+      - keycloak
     networks:
       - user-network
 
@@ -100,11 +122,20 @@ services:
       SPRING_DATASOURCE_PASSWORD: berkay
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_PROVIDER: keycloak
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_CLIENT-ID: payment-service-client
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_CLIENT-SECRET: ${PAYMENT_SERVICE_SECRET}
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_AUTHORIZATION-GRANT-TYPE: client_credentials
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_SCOPE: internal_api
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_TOKEN-URI: http://keycloak:8080/realms/microservices/protocol/openid-connect/token
+
     depends_on:
        kafka:
           condition: service_healthy
        payment-db:
          condition: service_started
+       keycloak:
+        condition: service_healthy
     networks:
       - user-network
 
@@ -329,7 +360,56 @@ services:
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
     networks:
       - user-network
+  keycloak-db:
+    image: postgres:15
+    container_name: keycloak-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak123
+    ports:
+      - "5432:5432"
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    networks:
+      - user-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U keycloak" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.7
+    container_name: keycloak
+    restart: unless-stopped
+    command:
+      - start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak123
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: 8080
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
+    ports:
+      - "8180:8080"  # 8080 yerine 8180 (gateway ile çakışmasın)
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    networks:
+      - user-network
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8080/health/ready || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
 volumes:
   user-db-data:
@@ -352,6 +432,9 @@ volumes:
     driver: local
   shipment-db-data:
     name: shipment-db-data
+    driver: local
+  keycloak-db-data:
+    name: keycloak-db-data
     driver: local
 
 networks:

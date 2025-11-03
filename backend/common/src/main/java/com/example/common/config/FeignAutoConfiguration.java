@@ -18,6 +18,7 @@ public class FeignAutoConfiguration {
     public FeignClientInterceptor feignClientInterceptor() {
         return new FeignClientInterceptor();
     }
+
     @Bean
     public OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager(
             ClientRegistrationRepository clientRegistrationRepository,
