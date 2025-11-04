@@ -2,16 +2,4 @@ spring:
   application:
     name: common
 
-  security:
-    oauth2:
-      client:
-        registration:
-          internal-client:
-            provider : keycloak
-            client-id: common
-            client-secret:
-            authorization-grant-type: client_credentials
-            scope: internal_api
-        provider:
-          keycloak:
-            token-uri: http://localhost:8080/auth/realms/my-realm/protocol/openid-connect/token
+

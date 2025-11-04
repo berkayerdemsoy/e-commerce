@@ -133,7 +133,7 @@ services:
        kafka:
           condition: service_healthy
        payment-db:
-         condition: service_started
+        condition: service_started
        keycloak:
         condition: service_healthy
     networks:
@@ -283,6 +283,12 @@ services:
       SPRING_DATASOURCE_PASSWORD: berkay
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_PROVIDER: keycloak
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_CLIENT-ID: warehouse-service-client
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_CLIENT-SECRET: ${WAREHOUSE_SERVICE_SECRET}
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_AUTHORIZATION-GRANT-TYPE: client_credentials
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_SCOPE: internal_api
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_TOKEN-URI: http://keycloak:8080/realms/microservices/protocol/openid-connect/token
     networks:
       - user-network
 
@@ -360,6 +366,7 @@ services:
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
     networks:
       - user-network
+
   keycloak-db:
     image: postgres:15
     container_name: keycloak-db
@@ -369,7 +376,7 @@ services:
       POSTGRES_USER: keycloak
       POSTGRES_PASSWORD: keycloak123
     ports:
-      - "5432:5432"
+      - "5439:5432"
     volumes:
       - keycloak-db-data:/var/lib/postgresql/data
     networks:
@@ -382,7 +389,7 @@ services:
 
 
   keycloak:
-    image: quay.io/keycloak/keycloak:23.0.7
+    image: keycloak/keycloak:22.0.5
     container_name: keycloak
     restart: unless-stopped
     command:
@@ -405,11 +412,11 @@ services:
     networks:
       - user-network
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:8080/health/ready || exit 1" ]
+      test: [ "CMD-SHELL", "sh -c 'cat < /dev/tcp/localhost/8080 >/dev/null 2>&1 || exit 1'" ]
       interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
+      timeout: 20s
+      retries: 15
+      start_period: 300s
 
 volumes:
   user-db-data:

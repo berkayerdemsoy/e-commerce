@@ -1,5 +1,6 @@
 package com.example.payment_service_app.serviceImpl;
 
+import com.example.payment_service_app.config.KafkaProducerService;
 import com.example.payment_service_app.entity.OutboxMessage;
 import com.example.payment_service_app.entity.Payment;
 import com.example.payment_service_app.exception.IdempotencyException;
@@ -31,7 +32,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final OutboxRepository outboxRepository;
     private final PaymentMapper paymentMapper;
     private final PaymentProcessor paymentProcessor;
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaProducerService kafkaProducerService;
 
     @Transactional
     @Override
@@ -56,7 +57,6 @@ public class PaymentServiceImpl implements PaymentService {
             log.error("Error during idempotency check", e);
             throw new PaymentProcessingException("Idempotency check failed", e);
         }
-
 
         UUID paymentId = UUID.randomUUID();
         log.info("Generated paymentId: {}", paymentId);
@@ -161,7 +161,7 @@ public class PaymentServiceImpl implements PaymentService {
                     .createdAt(LocalDateTime.now())
                     .build();
             outboxRepository.save(resultOutbox);
-            kafkaTemplate.send("payment-topic",resultOutbox.getPayload());
+            kafkaProducerService.sendMessage("payment-topic",resultOutbox.getPayload());
             log.info("Outbox result message saved");
         } catch (Exception e) {
             log.error("Failed to save outbox result", e);

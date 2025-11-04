@@ -2,6 +2,19 @@ spring:
   application:
     name: shipment-service
 
+  security:
+    oauth2:
+      client:
+        registration:
+          internal-client:
+            provider: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_PROVIDER}
+            client-id: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_CLIENT-ID}
+            client-secret: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_CLIENT-SECRET}
+            authorization-grant-type: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_AUTHORIZATION-GRANT-TYPE}
+            scope: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_SCOPE}
+        provider:
+          keycloak:
+            token-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_TOKEN-URI}
 
 
   kafka:
