@@ -42,3 +42,6 @@ logging:
     com.example.payment_service_app: DEBUG
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
+
+keycloak:
+  token-uri:
