@@ -6,15 +6,18 @@ spring:
     oauth2:
       client:
         registration:
-          internal-client:
-            provider: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_PROVIDER}
-            client-id: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_CLIENT-ID}
-            client-secret: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_CLIENT-SECRET}
-            authorization-grant-type: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_AUTHORIZATION-GRANT-TYPE}
-            scope: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_SCOPE}
+          kafka-client: # Keycloak'ta açtığın client-id
+            provider: keycloak
+            client-id: kafka-client
+            client-secret: ${SERVICE_SECRET}   # Secret'ı environment variable'dan al
+            authorization-grant-type: client_credentials
+            scope: openid
         provider:
           keycloak:
-            token-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_TOKEN-URI}
+            issuer-uri: http://keycloak:8080/realms/microservices
+            token-uri: http://keycloak:8080/realms/microservices/protocol/openid-connect/token
+            jwk-set-uri: http://keycloak:8080/realms/microservices/protocol/openid-connect/certs
+
 
   kafka:
     bootstrap-servers: kafka:9092
@@ -25,6 +28,13 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
+        security.protocol: SASL_PLAINTEXT
+        sasl.mechanism: OAUTHBEARER
+        sasl.jaas.config: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+          oauth.token.endpoint.uri="http://keycloak:8080/realms/microservices/protocol/openid-connect/token" \
+          oauth.client.id="kafka-client" \
+          oauth.client.secret="krU8C32iR5VUeTjXuw0GGQ7aEFsPUVtU" \
+          oauth.scope="openid";
         spring.json.trusted.packages: '*'
 
     producer:
@@ -43,5 +53,8 @@ logging:
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
 
+
 keycloak:
-  token-uri:
+  client-id: kafka-client
+  client-secret: ${SERVICE_SECRET}
+  token-uri: http://localhost:8080/realms/microservices/protocol/openid-connect/token

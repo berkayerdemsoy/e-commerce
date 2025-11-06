@@ -6,26 +6,38 @@ spring:
     oauth2:
       client:
         registration:
-          internal-client:
-            provider: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_PROVIDER}
-            client-id: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_CLIENT-ID}
-            client-secret: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_CLIENT-SECRET}
-            authorization-grant-type: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_AUTHORIZATION-GRANT-TYPE}
-            scope: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERNAL-CLIENT_SCOPE}
+          kafka-client:   # Keycloak'ta açtığın client-id
+            provider: keycloak
+            client-id: kafka-client
+            client-secret: ${SERVICE_SECRET}   # Secret environment variable'dan alınır
+            authorization-grant-type: client_credentials
+            scope: openid
         provider:
           keycloak:
-            token-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_TOKEN-URI}
+            issuer-uri: http://keycloak:8080/realms/microservices
+            token-uri: http://keycloak:8080/realms/microservices/protocol/openid-connect/token
+            jwk-set-uri: http://keycloak:8080/realms/microservices/protocol/openid-connect/certs
 
   kafka:
     bootstrap-servers: kafka:9092
+
     consumer:
       group-id: order-service-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      enable-auto-commit: false
       properties:
         spring.json.trusted.packages: '*'
-      enable.auto-commit: false
+        security.protocol: SASL_PLAINTEXT
+        sasl.mechanism: OAUTHBEARER
+        sasl.jaas.config: >
+          org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required
+          oauth.token.endpoint.uri="http://keycloak:8080/realms/microservices/protocol/openid-connect/token"
+          oauth.client.id="kafka-client"
+          oauth.client.secret="krU8C32iR5VUeTjXuw0GGQ7aEFsPUVtU"
+          oauth.scope="openid";
+
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -34,13 +46,20 @@ spring:
       properties:
         linger.ms: 10
         batch.size: 16384
+        security.protocol: SASL_PLAINTEXT
+        sasl.mechanism: OAUTHBEARER
+        sasl.jaas.config: >
+          org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required
+          oauth.token.endpoint.uri="http://keycloak:8080/realms/microservices/protocol/openid-connect/token"
+          oauth.client.id="kafka-client"
+          oauth.client.secret="krU8C32iR5VUeTjXuw0GGQ7aEFsPUVtU"
+          oauth.scope="openid";
 
 app:
   kafka:
     topics:
       paymentTopic: payment-topic
       orderTopic: order-topic
-
 
 logging:
   level:
