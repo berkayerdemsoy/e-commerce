@@ -13,6 +13,20 @@ services:
     networks:
       - user-network
 
+  keycloak:
+    image: keycloak/keycloak:21.1.1
+    container_name: keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command: [ "start-dev", "--http-enabled=true" ]
+    ports:
+      - "8180:8080"
+    networks:
+      - user-network
+
+
+
   cart-service:
     build:
       context: .
@@ -80,6 +94,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: berkay
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_ORDERSERVICE_CLIENT_ID: order-service-client
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_TOKEN_URI: http://keycloak:8080/realms/myrealm/protocol/openid-connect/token
     depends_on:
       - cart-service
       - order-db

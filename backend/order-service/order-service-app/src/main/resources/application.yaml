@@ -1,7 +1,19 @@
 spring:
   application:
     name: order-service-app
-
+  security:
+    oauth2:
+      client:
+        registration:
+          order-service:
+            client-id: order-service-client
+            client-secret: ${ORDER_SERVICE_CLIENT_SECRET}
+            authorization-grant-type: client_credentials
+            scope: openid
+            provider: keycloak
+        provider:
+          keycloak:
+            token-uri: http://keycloak:8080/realms/myrealm/protocol/openid-connect/token
 
   kafka:
     bootstrap-servers: kafka:9092
