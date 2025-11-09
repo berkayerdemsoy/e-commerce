@@ -25,6 +25,7 @@ public class Order {
     private double totalAmount;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private StatusType status;
 
 }

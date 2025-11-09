@@ -28,7 +28,8 @@ public class OAuth2FeignConfig {
     @Bean
     public RequestInterceptor oauth2FeignRequestInterceptor(OAuth2AuthorizedClientManager manager) {
         return requestTemplate -> {
-            OAuth2AuthorizeRequest authRequest = OAuth2AuthorizeRequest.withClientRegistrationId("order-service")
+            OAuth2AuthorizeRequest authRequest = OAuth2AuthorizeRequest
+                    .withClientRegistrationId("order-service-client")
                     .principal("order-service")
                     .build();
             OAuth2AuthorizedClient client = manager.authorize(authRequest);
