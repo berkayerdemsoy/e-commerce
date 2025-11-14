@@ -70,9 +70,11 @@ services:
     container_name: shipment-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: shipmentdb
-      POSTGRES_USER: berkay
-      POSTGRES_PASSWORD: berkay
+      SPRING_DATASOURCE_URL: jdbc:postgresql://shipment-db:5432/shipmentdb
+      SPRING_DATASOURCE_USERNAME: berkay
+      SPRING_DATASOURCE_PASSWORD: berkay
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
     ports:
       - "5438:5432"
     volumes:
@@ -96,7 +98,7 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_ORDER-SERVICE-CLIENT_CLIENT_ID: order-service-client
-      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_ORDER-SERVICE-CLIENT_CLIENT_SECRET: bNl2sOBmAlZ26QihWqQNQjgPTItXpWiA
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_ORDER-SERVICE-CLIENT_CLIENT_SECRET: g2KEnI8dxd32d2PGumNiGQmjX58pUP5o
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_ORDER-SERVICE-CLIENT_PROVIDER: keycloak
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_TOKEN_URI: http://keycloak:8080/realms/myrealm/protocol/openid-connect/token
     depends_on:

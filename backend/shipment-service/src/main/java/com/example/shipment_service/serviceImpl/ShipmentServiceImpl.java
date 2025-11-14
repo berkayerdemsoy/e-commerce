@@ -14,6 +14,8 @@ import com.example.shipment_service.service.ShipmentService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -66,5 +68,13 @@ public class ShipmentServiceImpl implements ShipmentService {
         eventPublisher.publishShipmentCreated(event);
 
         return shipmentMapper.toDto(shipment);
+    }
+
+    @Override
+    public Page<ShipmentResponse> getAllShipments(Pageable pageable, Long userId) {
+        Page<Shipment> shipments = shipmentRepository.findByUserId(userId,pageable);
+        Page<ShipmentResponse> eventDtos = shipments.map(shipmentMapper::toDto);
+        return eventDtos;
+
     }
 }

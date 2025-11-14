@@ -13,7 +13,6 @@ public class CargoApiClient {
     public CargoAssignmentResult assignShipment(Shipment shipment) {
         log.info("Simulating cargo API call for shipment: {}", shipment.getId());
 
-        // Gerçek kargo API entegrasyonu buraya gelir
         String trackingNumber = "TRACK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         String carrier = selectCarrier();
 

@@ -99,14 +99,14 @@ spring:
               predicates:
                   - Path=/api/cart/**
               filters:
-                - RewritePath=/api/cart/(?<segment>.*) , /cart/${segment}
+                - RewritePath=/api/cart/(?<segment>.*), /cart/${segment}
 
             - id: order-service-route
               uri: http://order-service:8080
               predicates:
                 - Path=/api/order/**
               filters:
-                - RewritePath=/api/order/(?<segment>.*) , /order/${segment}
+                - RewritePath=/api/order/(?<segment>.*), /order/${segment}
 
             - id: payment-service-route
               uri: http://payment-service:8080
@@ -114,6 +114,13 @@ spring:
                 - Path=/api/payment/**
               filters:
                 - RewritePath=/api/payment(?<remaining>/?.*), /payment${remaining}
+
+            - id: shipment-service-route
+              uri: http://shipment-service:8080
+              predicates:
+                  - Path=/api/shipment/**
+              filters:
+               - RewritePath=/api/shipment/(?<segment>.*), /shipment/${segment}
 jwt:
   secret: "4WeV2ipAS1fvqNSGSB8wuvMWSB5qX1UbNcSgu5TJYa5pWLCz6DBHTC0dgPWj6UwNvrtofPA029qSS+m9b/rq5p6CXu+Rlw+rTHpe1SSusYvTAZ5D4SGq4kwfSFFdYiaQyhXyojdVGzBvRQqzW2yjS9oukZRlGlkQlhnhsYShdCo="
 logging:

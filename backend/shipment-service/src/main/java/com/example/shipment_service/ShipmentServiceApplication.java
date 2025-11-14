@@ -7,7 +7,8 @@ import org.springframework.kafka.annotation.EnableKafka;
 
 @SpringBootApplication
 @EnableKafka
-@EnableFeignClients(basePackages = "com.example.order_service_client.client")
+@EnableFeignClients(basePackages = "com.example.order_service_client.client" ,
+        defaultConfiguration = com.example.common.config.FeignAutoConfiguration.class)
 public class ShipmentServiceApplication {
 
 	public static void main(String[] args) {
