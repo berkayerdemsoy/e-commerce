@@ -1,9 +1,18 @@
 server:
+
+
+
+
   port: 8080
 
 spring:
   application:
     name: gateway-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/myrealm
   cloud:
     gateway:
       server:
@@ -64,6 +73,54 @@ spring:
               filters:
                 - RewritePath=/api/assignments/(?<segment>.*), /assignments/${segment}
 
+            - id: warehouse-category-service-route
+              uri: http://warehouse-service:8080
+              predicates:
+                - Path=/api/warehouse-categories/**
+              filters:
+                - RewritePath=/api/warehouse-categories/(?<segment>.*), /warehouse-categories/${segment}
+
+            - id: product-shelf-service-route
+              uri: http://warehouse-service:8080
+              predicates:
+                  - Path=/api/product-shelves/**
+              filters:
+                - RewritePath=/api/product-shelves/(?<segment>.*) , /product-shelves/${segment}
+
+            - id: stock-movement-service-route
+              uri: http://warehouse-service:8080
+              predicates:
+                - Path=/api/stock-movements/**
+              filters:
+                - RewritePath=/api/stock-movements(?<remaining>/?.*), /stock-movements${remaining}
+
+            - id: cart-service-route
+              uri: http://cart-service:8080
+              predicates:
+                  - Path=/api/cart/**
+              filters:
+                - RewritePath=/api/cart/(?<segment>.*), /cart/${segment}
+
+            - id: order-service-route
+              uri: http://order-service:8080
+              predicates:
+                - Path=/api/order/**
+              filters:
+                - RewritePath=/api/order/(?<segment>.*), /order/${segment}
+
+            - id: payment-service-route
+              uri: http://payment-service:8080
+              predicates:
+                - Path=/api/payment/**
+              filters:
+                - RewritePath=/api/payment(?<remaining>/?.*), /payment${remaining}
+
+            - id: shipment-service-route
+              uri: http://shipment-service:8080
+              predicates:
+                  - Path=/api/shipment/**
+              filters:
+               - RewritePath=/api/shipment/(?<segment>.*), /shipment/${segment}
 jwt:
   secret: "4WeV2ipAS1fvqNSGSB8wuvMWSB5qX1UbNcSgu5TJYa5pWLCz6DBHTC0dgPWj6UwNvrtofPA029qSS+m9b/rq5p6CXu+Rlw+rTHpe1SSusYvTAZ5D4SGq4kwfSFFdYiaQyhXyojdVGzBvRQqzW2yjS9oukZRlGlkQlhnhsYShdCo="
 logging:

@@ -1,4 +1,151 @@
 services:
+  redis:
+    image: redis:7
+    container_name: redis
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: on-failure
+    ports:
+      - "6379:6379"
+    networks:
+      - user-network
+
+  keycloak:
+    image: keycloak/keycloak:21.1.1
+    container_name: keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command: [ "start-dev", "--http-enabled=true" ]
+    ports:
+      - "8180:8080"
+    networks:
+      - user-network
+
+
+
+  cart-service:
+    build:
+      context: .
+      dockerfile: cart-service/cart-service-app/Dockerfile
+    container_name: cart-service
+    restart: unless-stopped
+    ports:
+      - "8084:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+       SPRING_DATA_REDIS_HOST: redis
+       SPRING_DATA_REDIS_PORT: 6379
+       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/myrealm
+    networks:
+      - user-network
+
+  shipment-service:
+    build:
+      context: .
+      dockerfile: shipment-service/Dockerfile
+    container_name: shipment-service
+    restart: unless-stopped
+    ports:
+      - "8087:8080"
+    depends_on:
+       kafka:
+          condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://shipment-db:5432/shipmentdb
+      SPRING_DATASOURCE_USERNAME: berkay
+      SPRING_DATASOURCE_PASSWORD: berkay
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+    networks:
+      - user-network
+
+  shipment-db:
+    image: postgres:15
+    container_name: shipment-db
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://shipment-db:5432/shipmentdb
+      SPRING_DATASOURCE_USERNAME: berkay
+      SPRING_DATASOURCE_PASSWORD: berkay
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+    ports:
+      - "5438:5432"
+    volumes:
+      - shipment-db-data:/var/lib/postgresql/data
+    networks:
+      - user-network
+
+
+  order-service:
+    build:
+      context: .
+      dockerfile: order-service/order-service-app/Dockerfile
+    container_name: order-service
+    restart: unless-stopped
+    ports:
+      - "8085:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://order-db:5432/orderdb
+      SPRING_DATASOURCE_USERNAME: berkay
+      SPRING_DATASOURCE_PASSWORD: berkay
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_ORDER-SERVICE-CLIENT_CLIENT_ID: order-service-client
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_ORDER-SERVICE-CLIENT_CLIENT_SECRET: g2KEnI8dxd32d2PGumNiGQmjX58pUP5o
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_ORDER-SERVICE-CLIENT_PROVIDER: keycloak
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_TOKEN_URI: http://keycloak:8080/realms/myrealm/protocol/openid-connect/token
+    depends_on:
+      - cart-service
+      - order-db
+    networks:
+      - user-network
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: payment-service/payment-service-app/Dockerfile
+    container_name: payment-service
+    restart: unless-stopped
+    ports:
+      - "8086:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://payment-db:5432/paymentdb
+      SPRING_DATASOURCE_USERNAME: berkay
+      SPRING_DATASOURCE_PASSWORD: berkay
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+    depends_on:
+       kafka:
+          condition: service_healthy
+       payment-db:
+         condition: service_started
+    networks:
+      - user-network
+
+  payment-db:
+    image: postgres:15
+    container_name: payment-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: paymentdb
+      POSTGRES_USER: berkay
+      POSTGRES_PASSWORD: berkay
+    ports:
+      - "5437:5432"
+    volumes:
+      - payment-db-data:/var/lib/postgresql/data
+    networks:
+      - user-network
+
+
+
   user-db:
     image: postgres:15
     container_name: user-db
@@ -32,8 +179,8 @@ services:
 
   user-service:
     build:
-      context: ./user-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: user-service/user-service-app/Dockerfile
     container_name: user-service
     restart: unless-stopped
     ports:
@@ -48,6 +195,7 @@ services:
       SPRING_JPA_SHOW_SQL: "true"
     networks:
       - user-network
+
   gateway-service:
     build:
       context: ./api-gateway
@@ -63,8 +211,8 @@ services:
 
   shop-service:
     build:
-      context: ./shop-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./shop-service/shop-service-app/Dockerfile
     container_name: shop-service
     restart: unless-stopped
     ports:
@@ -94,10 +242,25 @@ services:
     networks:
       - user-network
 
+  order-db:
+    image: postgres:15
+    container_name: order-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: orderdb
+      POSTGRES_USER: berkay
+      POSTGRES_PASSWORD: berkay
+    ports:
+      - "5436:5432"
+    volumes:
+      - order-db-data:/var/lib/postgresql/data
+    networks:
+      - user-network
+
   warehouse-service:
     build:
-      context: ./warehouse-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./warehouse-service/warehouse-service-app/Dockerfile
     container_name: warehouse-service
     restart: unless-stopped
     ports:
@@ -129,6 +292,66 @@ services:
       - user-network
 
 
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_4LW_COMMANDS_WHITELIST: "*"
+    ports:
+      - "22181:2181"
+    networks:
+      - user-network
+    healthcheck:
+      test: [ "CMD-SHELL", "echo srvr | nc localhost 2181 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+    ports:
+      - "29092:29092"
+    networks:
+      - user-network
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092" ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - user-network
+
+
 volumes:
   user-db-data:
     name: user-db-data
@@ -141,6 +364,15 @@ volumes:
     driver: local
   warehouse-db-data:
     name: warehouse-db-data
+    driver: local
+  order-db-data:
+    name: order-db-data
+    driver: local
+  payment-db-data:
+    name: payment-db-data
+    driver: local
+  shipment-db-data:
+    name: shipment-db-data
     driver: local
 
 networks:

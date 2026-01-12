@@ -3,6 +3,7 @@ package com.example.api_gateway.authentication;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,14 +14,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class JwtService {
+
     @Value("${jwt.secret}")
     private String SECRET;
 
     public String generateToken(UserDetails user){
         Map<String, Object> claims = new HashMap<>();
-        claims.put("roles",user.getAuthorities().stream()
+        claims.put("roles", user.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority).toList());
         return Jwts.builder()
                 .claims(claims)
@@ -43,25 +46,17 @@ public class JwtService {
                 .getPayload();
     }
 
-    public boolean isTokenValid(String token,UserDetails userDetails){
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
-
-    }
     public boolean isTokenValid(String token) {
         try {
-            return !isTokenExpired(token);
+            Claims claims = extractAllClaims(token);
+            return !claims.getExpiration().before(new Date());
         } catch (Exception e) {
+            log.debug("Custom JWT validation failed: {}", e.getMessage());
             return false;
         }
     }
 
-
-    public boolean isTokenExpired(String token ){
+    public boolean isTokenExpired(String token){
         return extractAllClaims(token).getExpiration().before(new Date());
     }
-
-
-
-
 }

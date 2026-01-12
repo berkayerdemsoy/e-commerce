@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: order-service-app
+  security:
+    oauth2:
+      client:
+        registration:
+          order-service-client:
+            client-id: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_ORDERSERVICE_CLIENT_ID:order-service-client}
+            client-secret: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_ORDERSERVICE_CLIENT_SECRET:g2KEnI8dxd32d2PGumNiGQmjX58pUP5o}
+            authorization-grant-type: client_credentials
+            scope: openid
+            provider: keycloak
+        provider:
+          keycloak:
+            token-uri: http://keycloak:8080/realms/myrealm/protocol/openid-connect/token
+
+  kafka:
+    bootstrap-servers: kafka:9092
+    consumer:
+      group-id: order-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: '*'
+      enable.auto-commit: false
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        linger.ms: 10
+        batch.size: 16384
+
+app:
+  kafka:
+    topics:
+      paymentTopic: payment-topic
+      orderTopic: order-topic
+    consumer-group-id:  order-service-group
+
+logging:
+  level:
+    com.example.order_service_app: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.kafka: DEBUG
