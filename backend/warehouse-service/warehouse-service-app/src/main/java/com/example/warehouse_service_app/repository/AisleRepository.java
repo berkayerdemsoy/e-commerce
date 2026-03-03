@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface AisleRepository extends JpaRepository<Aisle,Long> {
     Optional<Aisle> findByAisleCode(String code);
     Optional<Aisle> findByAisleCodeIgnoreCase(String code);
+    long countByWarehouseId(Long warehouseId);
 }

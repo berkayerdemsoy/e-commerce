@@ -50,7 +50,7 @@ public class UserController {
         UserResponseDto updated =  userService.updateUserById(id, dto);
         return ResponseEntity.ok(updated);
     }
-    @GetMapping("/api/users/role/{role}")
+    @GetMapping("/role/{role}")
     public ResponseEntity<List<UserRoleResponse>> getUsersByRole(@PathVariable("role") String role) {
         List<UserRoleResponse> users = userService.getUsersByRole(role);
         return ResponseEntity.ok(users);

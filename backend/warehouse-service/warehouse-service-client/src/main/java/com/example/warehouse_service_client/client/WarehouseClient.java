@@ -1,6 +1,7 @@
 package com.example.warehouse_service_client.client;
 
 import com.example.warehouse_service_client.dto.WarehouseDto;
+import com.example.warehouse_service_client.dto.WarehouseSummaryDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -30,4 +31,7 @@ public interface WarehouseClient {
 
     @DeleteMapping("/{id}")
     void deleteWarehouse(@PathVariable("id") Long id);
+
+    @GetMapping("/{id}/summary")
+    WarehouseSummaryDto getWarehouseSummary(@PathVariable("id") Long id);
 }

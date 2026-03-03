@@ -29,4 +29,10 @@ public interface ProductShelfClient {
             @PathVariable("warehouseId") Long warehouseId,
             Pageable pageable
     );
+
+    @GetMapping("/warehouse/{warehouseId}")
+    Page<ProductShelfResponse> getByWarehouseId(
+            @PathVariable("warehouseId") Long warehouseId,
+            Pageable pageable
+    );
 }

@@ -1,6 +1,7 @@
 package com.example.warehouse_service_app.service;
 
 import com.example.warehouse_service_client.dto.WarehouseDto;
+import com.example.warehouse_service_client.dto.WarehouseSummaryDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -9,6 +10,7 @@ public interface WarehouseService {
     WarehouseDto getWarehouseById(Long id);
     WarehouseDto getWarehouseByName(String name);
     WarehouseDto createWarehouse(WarehouseDto warehouseDto);
-    WarehouseDto updateWarehouse(Long id,WarehouseDto warehouseDto);
+    WarehouseDto updateWarehouse(Long id, WarehouseDto warehouseDto);
     Void deleteWarehouse(Long id);
+    WarehouseSummaryDto getWarehouseSummary(Long id);
 }

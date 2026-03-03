@@ -11,4 +11,5 @@ public interface ProductShelfService {
     ProductShelfResponse assignProductToWarehouse(ProductShelfFilterRequest dto);
     ProductShelfResponse updateStock(ProductShelfUpdateRequest request);
     Page<ProductShelfResponse> getLowStockAlerts(Long warehouseId, Pageable pageable);
+    Page<ProductShelfResponse> getByWarehouseId(Long warehouseId, Pageable pageable);
 }

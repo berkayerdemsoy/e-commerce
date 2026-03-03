@@ -1,10 +1,7 @@
 package com.example.user_service_app.serviceImpl;
 
 import com.example.user_service_app.config.PasswordEncoderConfig;
-import com.example.user_service_client.dto.UserLoginDto;
-import com.example.user_service_client.dto.UserRegisterDto;
-import com.example.user_service_client.dto.UserResponseDto;
-import com.example.user_service_client.dto.UserRoleResponse;
+import com.example.user_service_client.dto.*;
 import com.example.user_service_app.entity.Role;
 import com.example.user_service_app.entity.User;
 import com.example.user_service_app.entity.UserPrincipal;
@@ -29,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,7 +42,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public String register(UserRegisterDto userRegisterDto) {
+    public AuthResponseDto register(UserRegisterDto userRegisterDto) {
         if (userRepository.findByUsernameIgnoreCase(userRegisterDto.username()).isPresent()) {
             throw new AlreadyExistsException("User already exists");
         }
@@ -75,14 +73,25 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.save(user);
         UserDetails userDetails = new UserPrincipal(savedUser);
 
-        return jwtService.generateToken(userDetails);
+        String accessToken = jwtService.generateToken(userDetails);
+        Set<String> roleNames = savedUser.getRoles().stream()
+                .map(r -> "ROLE_" + r.name())
+                .collect(Collectors.toSet());
+
+        return new AuthResponseDto(
+                accessToken,
+                savedUser.getId(),
+                savedUser.getUsername(),
+                savedUser.getEmail(),
+                roleNames
+        );
     }
 
     @Override
-    public String login(UserLoginDto userLoginDto) {
+    public AuthResponseDto login(UserLoginDto userLoginDto) {
         User user = userRepository.findByUsernameIgnoreCase(userLoginDto.username())
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
-        Authentication authentication =  authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 userLoginDto.username(),
                 userLoginDto.password()
         ));
@@ -92,7 +101,51 @@ public class UserServiceImpl implements UserService {
         }
 
         UserDetails userDetails = new UserPrincipal(user);
-        return jwtService.generateToken(userDetails);
+        String accessToken = jwtService.generateToken(userDetails);
+        Set<String> roleNames = user.getRoles().stream()
+                .map(r -> "ROLE_" + r.name())
+                .collect(Collectors.toSet());
+
+        return new AuthResponseDto(
+                accessToken,
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                roleNames
+        );
+    }
+
+    @Override
+    public AuthResponseDto refreshToken(String refreshToken) {
+        String username = jwtService.extractUsername(refreshToken);
+
+        if (jwtService.isTokenExpired(refreshToken)) {
+            throw new InvalidCredentialsException("Refresh token expired, please login again");
+        }
+
+        User user = userRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        UserDetails userDetails = new UserPrincipal(user);
+        String newAccessToken = jwtService.generateToken(userDetails);
+        Set<String> roleNames = user.getRoles().stream()
+                .map(r -> "ROLE_" + r.name())
+                .collect(Collectors.toSet());
+
+        return new AuthResponseDto(
+                newAccessToken,
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                roleNames
+        );
+    }
+
+    @Override
+    public UserResponseDto getCurrentUser(String username) {
+        User user = userRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        return userMapper.toDto(user);
     }
 
     @Override
@@ -123,7 +176,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto updateUserById(Long id, UserLoginDto userLoginDto) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
         user.setUsername(userLoginDto.username());
-        if(userLoginDto.password() !=null && !userLoginDto.password().isBlank()){
+        if (userLoginDto.password() != null && !userLoginDto.password().isBlank()) {
             user.setPassword(passwordEncoderConfig.passwordEncoder().encode(userLoginDto.password()));
         }
         User updatedUser = userRepository.save(user);
@@ -150,6 +203,5 @@ public class UserServiceImpl implements UserService {
                 ))
                 .collect(Collectors.toList());
     }
-
 
 }

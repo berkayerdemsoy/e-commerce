@@ -63,7 +63,13 @@ public class ProductShelfServiceImpl implements ProductShelfService  {
 
     @Override
     public Page<ProductShelfResponse> getLowStockAlerts(Long warehouseId, Pageable pageable) {
-        Page<ProductShelf> productShelves = productShelfRepository.findLowStockByWarehouse(warehouseId,pageable);
+        Page<ProductShelf> productShelves = productShelfRepository.findLowStockByWarehouse(warehouseId, pageable);
+        return productShelves.map(mapper::toDto);
+    }
+
+    @Override
+    public Page<ProductShelfResponse> getByWarehouseId(Long warehouseId, Pageable pageable) {
+        Page<ProductShelf> productShelves = productShelfRepository.findByWarehouseId(warehouseId, pageable);
         return productShelves.map(mapper::toDto);
     }
 }

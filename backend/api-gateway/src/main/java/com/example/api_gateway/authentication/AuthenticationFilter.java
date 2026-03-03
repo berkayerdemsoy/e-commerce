@@ -25,7 +25,8 @@ public class AuthenticationFilter implements Ordered, GlobalFilter {
 
     private final List<String> publicEndpoints = List.of(
             "/auth/register",
-            "/auth/login"
+            "/auth/login",
+            "/auth/refresh-token"
     );
 
     @Override

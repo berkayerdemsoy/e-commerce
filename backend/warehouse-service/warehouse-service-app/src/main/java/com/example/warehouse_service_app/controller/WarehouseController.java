@@ -1,6 +1,7 @@
 package com.example.warehouse_service_app.controller;
 
 import com.example.warehouse_service_client.dto.WarehouseDto;
+import com.example.warehouse_service_client.dto.WarehouseSummaryDto;
 import com.example.warehouse_service_app.service.WarehouseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,5 +49,15 @@ public class WarehouseController {
     public ResponseEntity<Void> deleteWarehouse(@PathVariable("id") Long id){
         warehouseService.deleteWarehouse(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Dashboard için depo özet bilgisi.
+     * Toplam ürün, raf, koridor sayısı, stok miktarı ve düşük stok alarm sayısını döndürür.
+     */
+    @GetMapping("/{id}/summary")
+    public ResponseEntity<WarehouseSummaryDto> getWarehouseSummary(@PathVariable("id") Long id) {
+        WarehouseSummaryDto summary = warehouseService.getWarehouseSummary(id);
+        return ResponseEntity.ok(summary);
     }
 }

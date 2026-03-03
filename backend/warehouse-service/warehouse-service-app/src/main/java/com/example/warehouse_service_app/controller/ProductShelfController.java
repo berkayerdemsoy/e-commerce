@@ -41,5 +41,12 @@ public class ProductShelfController {
         Page<ProductShelfResponse> response = productShelfService.getLowStockAlerts(warehouseId, pageable);
         return ResponseEntity.ok(response);
     }
-}
 
+    @GetMapping("/warehouse/{warehouseId}")
+    public ResponseEntity<Page<ProductShelfResponse>> getByWarehouseId(
+            @PathVariable("warehouseId") Long warehouseId,
+            Pageable pageable) {
+        Page<ProductShelfResponse> response = productShelfService.getByWarehouseId(warehouseId, pageable);
+        return ResponseEntity.ok(response);
+    }
+}

@@ -20,4 +20,13 @@ public interface ProductShelfRepository extends JpaRepository<ProductShelf,Long>
     @Query("SELECT ps FROM ProductShelf ps WHERE ps.warehouseId = :warehouseId " +
     "AND ps.quantity < ps.minStockLevel")
     Page<ProductShelf> findLowStockByWarehouse(@Param("warehouseId") Long warehouseId,Pageable pageable);
+
+    @Query("SELECT COUNT(DISTINCT ps.productId) FROM ProductShelf ps WHERE ps.warehouseId = :warehouseId")
+    long countDistinctProductsByWarehouseId(@Param("warehouseId") Long warehouseId);
+
+    @Query("SELECT COALESCE(SUM(ps.quantity), 0) FROM ProductShelf ps WHERE ps.warehouseId = :warehouseId")
+    long sumQuantityByWarehouseId(@Param("warehouseId") Long warehouseId);
+
+    @Query("SELECT COUNT(ps) FROM ProductShelf ps WHERE ps.warehouseId = :warehouseId AND ps.quantity < ps.minStockLevel")
+    long countLowStockByWarehouseId(@Param("warehouseId") Long warehouseId);
 }
