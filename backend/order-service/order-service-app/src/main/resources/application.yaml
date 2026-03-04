@@ -7,7 +7,7 @@ spring:
         registration:
           order-service-client:
             client-id: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_ORDERSERVICE_CLIENT_ID:order-service-client}
-            client-secret: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_ORDERSERVICE_CLIENT_SECRET:g2KEnI8dxd32d2PGumNiGQmjX58pUP5o}
+            client-secret: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_ORDERSERVICE_CLIENT_SECRET:TwSI6dM4Z3xHs0X8dnAXllckrllblnOX}
             authorization-grant-type: client_credentials
             scope: openid
             provider: keycloak
