@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -18,21 +19,44 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String SECRET;
 
-    public String generateToken(UserDetails user){
+    /** Access-token süresi: 30 dakika */
+    private static final long ACCESS_TOKEN_EXPIRY = 1000L * 60 * 30;
+
+    /** Refresh-token süresi: 7 gün */
+    private static final long REFRESH_TOKEN_EXPIRY = 1000L * 60 * 60 * 24 * 7;
+
+    public String generateToken(UserDetails user) {
+        return buildToken(user, ACCESS_TOKEN_EXPIRY);
+    }
+
+    public String generateRefreshToken(UserDetails user) {
+        return buildToken(user, REFRESH_TOKEN_EXPIRY);
+    }
+
+    private String buildToken(UserDetails user, long expiry) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("roles",user.getAuthorities().stream()
+        claims.put("roles", user.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority).toList());
         return Jwts.builder()
                 .claims(claims)
                 .subject(user.getUsername())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
+                .expiration(new Date(System.currentTimeMillis() + expiry))
                 .signWith(Keys.hmacShaKeyFor(SECRET.getBytes()), Jwts.SIG.HS256)
                 .compact();
     }
 
-    public String extractUsername(String token){
+    public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> extractRoles(String token) {
+        Object roles = extractAllClaims(token).get("roles");
+        if (roles instanceof List<?>) {
+            return (List<String>) roles;
+        }
+        return List.of();
     }
 
     private Claims extractAllClaims(String token) {
@@ -43,17 +67,13 @@ public class JwtService {
                 .getPayload();
     }
 
-    public boolean isTokenValid(String token,UserDetails userDetails){
+    public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
-
     }
 
-    public boolean isTokenExpired(String token ){
+    public boolean isTokenExpired(String token) {
         return extractAllClaims(token).getExpiration().before(new Date());
     }
-
-
-
 
 }
