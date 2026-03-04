@@ -53,18 +53,26 @@ Adım 1: Projeyi Klonlayın
 git clone https://github.com/berkayerdemsoy/e-commerce.git
 cd e-commerce
 
-Adım 2: JAR Dosyalarını Oluşturun (Maven)
+Adım 2: Ortam Değişkenlerini Ayarlayın
+
+backend/ dizininde .env.example dosyasını kopyalayıp .env oluşturun ve kendi Keycloak client secret değerinizi girin:
+
+cp backend/.env.example backend/.env
+
+Ardından .env dosyasını düzenleyerek ORDER_SERVICE_CLIENT_SECRET değerini Keycloak'tan aldığınız gerçek client secret ile değiştirin.
+
+Adım 3: JAR Dosyalarını Oluşturun (Maven)
 
 Proje kök dizininde:
 ./mvnw clean package -DskipTests
 
-Adım 3: Docker Konteynerlerini Başlatın
+Adım 4: Docker Konteynerlerini Başlatın
 
 docker-compose up -d --build
 
 Bu işlem; Kafka, Zookeeper, Redis, Postgres veritabanları, Keycloak ve tüm mikroservisleri (Toplam ~12 konteyner) doğru sırayla ayağa kaldıracaktır.
 
-Adım 4: Erişim
+Adım 5: Erişim
 API Gateway: http://localhost:8080
 
 Keycloak Admin Console: http://localhost:8180 (User: admin, Pass: admin)
