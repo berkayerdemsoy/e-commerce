@@ -1,11 +1,12 @@
-import { Component, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
+import { ThemeService } from '../theme/theme.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
   template: `
-    <header class="header">
+    <header class="header" [class.sidebar-collapsed]="sidebarCollapsed()">
       <div class="header__left">
         <button class="header__menu-btn" (click)="toggleSidebar.emit()">
           <span class="material-symbols-outlined">menu</span>
@@ -14,6 +15,14 @@ import { AuthService } from '../auth/auth.service';
       </div>
 
       <div class="header__right">
+        <!-- Dark mode toggle -->
+        <button class="header__theme-btn" (click)="themeService.toggle()"
+                [title]="themeService.isDark() ? 'Açık Tema' : 'Koyu Tema'">
+          <span class="material-symbols-outlined">
+            {{ themeService.isDark() ? 'light_mode' : 'dark_mode' }}
+          </span>
+        </button>
+
         @if (authService.currentUser(); as user) {
           <div class="header__user">
             <div class="header__avatar">
@@ -39,15 +48,20 @@ import { AuthService } from '../auth/auth.service';
       position: fixed;
       top: 0;
       right: 0;
-      left: 0;
+      left: $sidebar-width;
       height: $header-height;
-      background: #fff;
-      border-bottom: 1px solid $gray-200;
+      background: var(--mm-header-bg, #fff);
+      border-bottom: 1px solid var(--mm-header-border, #e5e7eb);
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 1.5rem;
       z-index: 90;
+      transition: left $transition-base, background-color $transition-base, border-color $transition-base;
+
+      &.sidebar-collapsed {
+        left: $sidebar-collapsed-width;
+      }
 
       &__left {
         display: flex;
@@ -64,7 +78,7 @@ import { AuthService } from '../auth/auth.service';
         border: none;
         border-radius: $border-radius;
         background: transparent;
-        color: $gray-600;
+        color: $text-muted;
         cursor: pointer;
         transition: background $transition-fast;
         &:hover { background: $gray-100; }
@@ -73,13 +87,37 @@ import { AuthService } from '../auth/auth.service';
       &__title {
         font-size: 1.125rem;
         font-weight: 600;
-        color: $gray-800;
+        color: $text-primary;
       }
 
       &__right {
         display: flex;
         align-items: center;
         gap: 1rem;
+      }
+
+      &__theme-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border: 1px solid $surface-border;
+        border-radius: $border-radius;
+        background: $surface-card;
+        color: $text-muted;
+        cursor: pointer;
+        transition: all $transition-fast;
+
+        &:hover {
+          background: $gray-100;
+          color: $text-primary;
+          border-color: $gray-400;
+        }
+
+        .material-symbols-outlined {
+          font-size: 20px;
+        }
       }
 
       &__user {
@@ -110,20 +148,24 @@ import { AuthService } from '../auth/auth.service';
       &__username {
         font-size: 0.875rem;
         font-weight: 600;
-        color: $gray-800;
+        color: $text-primary;
       }
 
       &__role {
         font-size: 0.75rem;
-        color: $gray-500;
+        color: $text-muted;
       }
     }
   `],
 })
 export class HeaderComponent {
+  sidebarCollapsed = input(false);
   toggleSidebar = output<void>();
 
-  constructor(public authService: AuthService) {}
+  constructor(
+    public authService: AuthService,
+    public themeService: ThemeService,
+  ) {}
 
   get primaryRole(): string {
     const roles = this.authService.roles();

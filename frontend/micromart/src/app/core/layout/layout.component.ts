@@ -14,7 +14,9 @@ import { HeaderComponent } from './header.component';
         (toggle)="sidebarCollapsed.set(!sidebarCollapsed())" />
 
       <div class="layout__main">
-        <app-header (toggleSidebar)="sidebarCollapsed.set(!sidebarCollapsed())" />
+        <app-header
+          [sidebarCollapsed]="sidebarCollapsed()"
+          (toggleSidebar)="sidebarCollapsed.set(!sidebarCollapsed())" />
 
         <main class="layout__content">
           <router-outlet />

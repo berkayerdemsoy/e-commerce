@@ -55,12 +55,12 @@ interface NavItem {
       left: 0;
       bottom: 0;
       width: $sidebar-width;
-      background: $gray-900;
-      color: $gray-300;
+      background: var(--mm-sidebar-bg, #111827);
+      color: var(--mm-sidebar-text, #d1d5db);
       display: flex;
       flex-direction: column;
       z-index: 100;
-      transition: width $transition-base;
+      transition: width $transition-base, background-color $transition-base;
       overflow: hidden;
 
       &.collapsed {
@@ -72,7 +72,7 @@ interface NavItem {
         align-items: center;
         gap: 0.75rem;
         padding: 1.25rem 1rem;
-        border-bottom: 1px solid $gray-700;
+        border-bottom: 1px solid var(--mm-sidebar-border, #374151);
         min-height: $header-height;
 
         .logo-icon {
@@ -103,7 +103,7 @@ interface NavItem {
         justify-content: center;
         padding: 0.75rem;
         border: none;
-        border-top: 1px solid $gray-700;
+        border-top: 1px solid var(--mm-sidebar-border, #374151);
         background: transparent;
         color: $gray-400;
         cursor: pointer;

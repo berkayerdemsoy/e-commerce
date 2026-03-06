@@ -1,42 +1,118 @@
 // ──────────────────────────────────────
 // MicroMart Design Tokens
+// CSS Custom Properties + SCSS helpers
 // ──────────────────────────────────────
 
-// Colors
-$primary:       #4f46e5;   // Indigo-600
-$primary-light: #818cf8;   // Indigo-400
-$primary-dark:  #3730a3;   // Indigo-800
-$accent:        #06b6d4;   // Cyan-500
-$success:       #10b981;   // Emerald-500
-$warning:       #f59e0b;   // Amber-500
-$danger:        #ef4444;   // Red-500
-$info:          #3b82f6;   // Blue-500
+// ── Static brand colors (always the same) ──
+$primary:       #4f46e5;
+$primary-light: #818cf8;
+$primary-dark:  #3730a3;
+$accent:        #06b6d4;
+$success:       #10b981;
+$warning:       #f59e0b;
+$danger:        #ef4444;
+$info:          #3b82f6;
 
-// Neutrals
-$gray-50:  #f9fafb;
-$gray-100: #f3f4f6;
-$gray-200: #e5e7eb;
-$gray-300: #d1d5db;
-$gray-400: #9ca3af;
-$gray-500: #6b7280;
-$gray-600: #4b5563;
-$gray-700: #374151;
-$gray-800: #1f2937;
-$gray-900: #111827;
-
-// Layout
+// ── Layout (static, used by both themes) ──
 $sidebar-width:           260px;
 $sidebar-collapsed-width: 72px;
 $header-height:           64px;
 $border-radius:           8px;
 $border-radius-lg:        12px;
 
-// Shadows
-$shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.05);
-$shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-$shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-
-// Transitions
+// ── Transitions ──
 $transition-fast: 150ms ease;
 $transition-base: 250ms ease;
+
+// ── Semantic SCSS aliases that read CSS custom properties ──
+// Use these in component styles to stay theme-aware.
+$gray-50:  var(--mm-gray-50);
+$gray-100: var(--mm-gray-100);
+$gray-200: var(--mm-gray-200);
+$gray-300: var(--mm-gray-300);
+$gray-400: var(--mm-gray-400);
+$gray-500: var(--mm-gray-500);
+$gray-600: var(--mm-gray-600);
+$gray-700: var(--mm-gray-700);
+$gray-800: var(--mm-gray-800);
+$gray-900: var(--mm-gray-900);
+
+// Surfaces & text
+$surface-ground:  var(--mm-surface-ground);
+$surface-card:    var(--mm-surface-card);
+$surface-overlay: var(--mm-surface-overlay);
+$surface-border:  var(--mm-surface-border);
+$text-primary:    var(--mm-text-primary);
+$text-secondary:  var(--mm-text-secondary);
+$text-muted:      var(--mm-text-muted);
+
+// Shadows
+$shadow-sm:  var(--mm-shadow-sm);
+$shadow-md:  var(--mm-shadow-md);
+$shadow-lg:  var(--mm-shadow-lg);
+
+// ──────────────────────────────────────
+// Theme definitions (applied via [data-theme])
+// ──────────────────────────────────────
+@mixin light-theme {
+  --mm-gray-50:  #f9fafb;
+  --mm-gray-100: #f3f4f6;
+  --mm-gray-200: #e5e7eb;
+  --mm-gray-300: #d1d5db;
+  --mm-gray-400: #9ca3af;
+  --mm-gray-500: #6b7280;
+  --mm-gray-600: #4b5563;
+  --mm-gray-700: #374151;
+  --mm-gray-800: #1f2937;
+  --mm-gray-900: #111827;
+
+  --mm-surface-ground:  #f9fafb;
+  --mm-surface-card:    #ffffff;
+  --mm-surface-overlay: #ffffff;
+  --mm-surface-border:  #e5e7eb;
+  --mm-text-primary:    #111827;
+  --mm-text-secondary:  #374151;
+  --mm-text-muted:      #6b7280;
+
+  --mm-shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.05);
+  --mm-shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --mm-shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+
+  --mm-sidebar-bg:      #111827;
+  --mm-sidebar-text:    #d1d5db;
+  --mm-sidebar-border:  #374151;
+  --mm-header-bg:       #ffffff;
+  --mm-header-border:   #e5e7eb;
+}
+
+@mixin dark-theme {
+  --mm-gray-50:  #1a1a2e;
+  --mm-gray-100: #1e1e33;
+  --mm-gray-200: #2a2a40;
+  --mm-gray-300: #3a3a52;
+  --mm-gray-400: #6b6b80;
+  --mm-gray-500: #9ca3af;
+  --mm-gray-600: #c9cdd4;
+  --mm-gray-700: #d1d5db;
+  --mm-gray-800: #e5e7eb;
+  --mm-gray-900: #f3f4f6;
+
+  --mm-surface-ground:  #0f0f1a;
+  --mm-surface-card:    #1a1a2e;
+  --mm-surface-overlay: #1e1e33;
+  --mm-surface-border:  #2a2a40;
+  --mm-text-primary:    #f3f4f6;
+  --mm-text-secondary:  #d1d5db;
+  --mm-text-muted:      #9ca3af;
+
+  --mm-shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.4);
+  --mm-shadow-md:  0 4px 8px rgba(0, 0, 0, 0.5);
+  --mm-shadow-lg:  0 10px 20px rgba(0, 0, 0, 0.6);
+
+  --mm-sidebar-bg:      #0d0d1a;
+  --mm-sidebar-text:    #9ca3af;
+  --mm-sidebar-border:  #2a2a40;
+  --mm-header-bg:       #1a1a2e;
+  --mm-header-border:   #2a2a40;
+}
 
