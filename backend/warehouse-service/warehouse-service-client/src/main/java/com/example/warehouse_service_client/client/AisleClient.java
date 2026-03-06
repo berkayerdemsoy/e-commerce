@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @FeignClient(
         name = "warehouse-service",
         contextId = "aisleClient",
@@ -31,4 +33,7 @@ public interface AisleClient {
 
     @DeleteMapping("/{id}")
     void deleteAisle(@PathVariable("id") Long id);
+
+    @GetMapping("/warehouse/{warehouseId}")
+    List<AisleDto> getAislesByWarehouseId(@PathVariable("warehouseId") Long warehouseId);
 }

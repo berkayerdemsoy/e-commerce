@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -14,4 +15,6 @@ public interface ShelfRepository extends JpaRepository<Shelf,Long> {
 
     @Query("SELECT COUNT(s) FROM Shelf s WHERE s.aisle.warehouse.id = :warehouseId")
     long countByWarehouseId(@Param("warehouseId") Long warehouseId);
+
+    List<Shelf> findByAisleId(Long aisleId);
 }

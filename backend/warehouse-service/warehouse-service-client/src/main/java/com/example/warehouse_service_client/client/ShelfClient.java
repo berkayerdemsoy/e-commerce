@@ -5,6 +5,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @FeignClient(
         name = "warehouse-service",
         contextId = "shelfClient",
@@ -31,4 +33,7 @@ public interface ShelfClient {
 
     @DeleteMapping("/{id}")
     void deleteShelf(@PathVariable("id") Long id);
+
+    @GetMapping("/aisle/{aisleId}")
+    List<ShelfDto> getShelvesByAisleId(@PathVariable("aisleId") Long aisleId);
 }

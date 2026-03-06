@@ -19,11 +19,17 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-    command: [ "start-dev", "--http-enabled=true" ]
+    command: [ "start-dev", "--http-enabled=true", "--health-enabled=true" ]
     ports:
       - "8180:8080"
     networks:
       - user-network
+    healthcheck:
+      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q '200 OK'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
 
 
 
@@ -37,6 +43,8 @@ services:
       - "8084:8080"
     depends_on:
       redis:
+        condition: service_healthy
+      keycloak:
         condition: service_healthy
     environment:
        SPRING_DATA_REDIS_HOST: redis
@@ -97,13 +105,15 @@ services:
       SPRING_DATASOURCE_PASSWORD: berkay
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
-      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_ORDER-SERVICE-CLIENT_CLIENT_ID: order-service-client
-      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_ORDER-SERVICE-CLIENT_CLIENT_SECRET: g2KEnI8dxd32d2PGumNiGQmjX58pUP5o
-      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_ORDER-SERVICE-CLIENT_PROVIDER: keycloak
-      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_TOKEN_URI: http://keycloak:8080/realms/myrealm/protocol/openid-connect/token
+      ORDER_SERVICE_CLIENT_ID: ${ORDER_SERVICE_CLIENT_ID:-order-service-client}
+      ORDER_SERVICE_CLIENT_SECRET: ${ORDER_SERVICE_CLIENT_SECRET}
     depends_on:
-      - cart-service
-      - order-db
+      cart-service:
+        condition: service_started
+      order-db:
+        condition: service_started
+      keycloak:
+        condition: service_healthy
     networks:
       - user-network
 
@@ -205,7 +215,10 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - user-service
+      user-service:
+        condition: service_started
+      keycloak:
+        condition: service_healthy
     networks:
       - user-network
 

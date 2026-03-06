@@ -16,6 +16,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class AisleServiceImpl implements AisleService {
@@ -75,6 +78,12 @@ public class AisleServiceImpl implements AisleService {
     public Page<AisleDto> getAllAisles(Pageable pageable) {
         Page<Aisle> aisles = aisleRepository.findAll(pageable);
         return aisles.map(aisleMapper::toDto);
+    }
+
+    @Override
+    public List<AisleDto> getAislesByWarehouseId(Long warehouseId) {
+        List<Aisle> aisles = aisleRepository.findByWarehouseId(warehouseId);
+        return aisles.stream().map(aisleMapper::toDto).collect(Collectors.toList());
     }
 
 }

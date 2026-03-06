@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/shelf")
@@ -41,5 +43,9 @@ public class ShelfController {
     @PutMapping("/update/{id}")
     public ResponseEntity<ShelfDto> updateShelf(@PathVariable("id") Long id,@Valid @RequestBody ShelfDto shelfDto){
         return ResponseEntity.ok(shelfService.updateShelf(id,shelfDto));
+    }
+    @GetMapping("/aisle/{aisleId}")
+    public ResponseEntity<List<ShelfDto>> getShelvesByAisleId(@PathVariable("aisleId") Long aisleId){
+        return ResponseEntity.ok(shelfService.getShelvesByAisleId(aisleId));
     }
 }
