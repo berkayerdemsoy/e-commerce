@@ -8,6 +8,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/login/login.component').then((m) => m.LoginComponent),
   },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/register/register.component').then((m) => m.RegisterComponent),
+  },
 
   // ── Authenticated (Layout wrapper) ──
   {
@@ -67,6 +72,15 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/products/product-list/product-list.component').then(
             (m) => m.ProductListComponent,
+          ),
+      },
+
+      // Categories
+      {
+        path: 'categories',
+        loadComponent: () =>
+          import('./features/categories/category-list.component').then(
+            (m) => m.CategoryListComponent,
           ),
       },
 

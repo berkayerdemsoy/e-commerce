@@ -1,17 +1,25 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Select } from 'primeng/select';
 import { WarehouseApiService } from '../../core/api/warehouse-api.service';
 import { StockApiService } from '../../core/api/stock-api.service';
+import { ProductApiService } from '../../core/api/product-api.service';
+import { WarehouseStore } from '../../core/store/warehouse.store';
+import { CategoryStore } from '../../core/store/category.store';
+import { InventoryStore } from '../../core/store/inventory.store';
+import { NotificationService } from '../../core/notification/notification.service';
 import {
   AisleDto, ShelfDto, ProductShelfResponse,
   StockMovementResponse, StockMovementRequest,
-  ProductShelfUpdateRequest, Page,
+  ProductShelfUpdateRequest, ProductCreateDto,
 } from '../../core/api/api.model';
 
 @Component({
   selector: 'app-inventory-shell',
   standalone: true,
-  imports: [FormsModule],
+  imports: [ReactiveFormsModule, FormsModule, Select],
   template: `
     <div class="page">
       <div class="page__header">
@@ -49,20 +57,40 @@ import {
           </div>
 
           @if (showAisleForm()) {
-            <form class="inline-form" (ngSubmit)="onCreateAisle()">
-              <div class="form-group">
-                <label>Depo ID</label>
-                <input type="number" class="form-input" [(ngModel)]="newAisle.warehouseId" name="wId" required />
+            <form [formGroup]="aisleForm" (ngSubmit)="onCreateAisle()" class="inline-form">
+              <div class="form-group" style="min-width: 200px;">
+                <label>Depo</label>
+                <p-select
+                  formControlName="warehouseId"
+                  [options]="warehouseStore.warehouses()"
+                  optionLabel="name"
+                  optionValue="id"
+                  placeholder="Depo seçin..."
+                  [filter]="true"
+                  filterPlaceholder="Ara..."
+                  [showClear]="true"
+                  styleClass="w-full" />
+              </div>
+              <div class="form-group" style="min-width: 160px;">
+                <label>Kategori</label>
+                <p-select
+                  formControlName="categoryId"
+                  [options]="categoryStore.categories()"
+                  optionLabel="name"
+                  optionValue="id"
+                  placeholder="Kategori seçin..."
+                  [filter]="true"
+                  filterPlaceholder="Ara..."
+                  [showClear]="true"
+                  styleClass="w-full" />
               </div>
               <div class="form-group">
                 <label>Koridor Kodu</label>
-                <input type="text" class="form-input" [(ngModel)]="newAisle.aisleCode" name="code" required />
+                <input type="text" class="form-input" formControlName="aisleCode" placeholder="Örn: A-01" />
               </div>
-              <div class="form-group">
-                <label>Kategori ID</label>
-                <input type="number" class="form-input" [(ngModel)]="newAisle.categoryId" name="catId" required />
-              </div>
-              <button type="submit" class="btn btn-primary">Ekle</button>
+              <button type="submit" class="btn btn-primary" [disabled]="aisleForm.invalid">
+                <span class="material-symbols-outlined">add</span> Ekle
+              </button>
             </form>
           }
 
@@ -105,20 +133,46 @@ import {
           </div>
 
           @if (showShelfForm()) {
-            <form class="inline-form" (ngSubmit)="onCreateShelf()">
-              <div class="form-group">
-                <label>Koridor ID</label>
-                <input type="number" class="form-input" [(ngModel)]="newShelf.aisleId" name="aisleId" required />
+            <form [formGroup]="shelfForm" (ngSubmit)="onCreateShelf()" class="inline-form">
+              <div class="form-group" style="min-width: 200px;">
+                <label>Depo</label>
+                <p-select
+                  formControlName="warehouseId"
+                  [options]="warehouseStore.warehouses()"
+                  optionLabel="name"
+                  optionValue="id"
+                  placeholder="Önce depo seçin..."
+                  [filter]="true"
+                  filterPlaceholder="Ara..."
+                  [showClear]="true"
+                  styleClass="w-full" />
+              </div>
+              <div class="form-group" style="min-width: 200px;">
+                <label>Koridor</label>
+                <p-select
+                  formControlName="aisleId"
+                  [options]="inventoryStore.aisles()"
+                  optionLabel="aisleCode"
+                  optionValue="id"
+                  placeholder="Koridor seçin..."
+                  [filter]="true"
+                  filterPlaceholder="Ara..."
+                  [disabled]="!shelfForm.get('warehouseId')?.value"
+                  [loading]="inventoryStore.aislesLoading()"
+                  [showClear]="true"
+                  styleClass="w-full" />
               </div>
               <div class="form-group">
                 <label>Raf Kodu</label>
-                <input type="text" class="form-input" [(ngModel)]="newShelf.shelfCode" name="shelfCode" required />
+                <input type="text" class="form-input" formControlName="shelfCode" placeholder="Örn: S-01" />
               </div>
               <div class="form-group">
                 <label>Kapasite</label>
-                <input type="number" class="form-input" [(ngModel)]="newShelf.capacity" name="cap" required />
+                <input type="number" class="form-input" formControlName="capacity" placeholder="100" />
               </div>
-              <button type="submit" class="btn btn-primary">Ekle</button>
+              <button type="submit" class="btn btn-primary" [disabled]="shelfForm.invalid">
+                <span class="material-symbols-outlined">add</span> Ekle
+              </button>
             </form>
           }
 
@@ -128,7 +182,7 @@ import {
                 <tr><th>ID</th><th>Raf Kodu</th><th>Koridor ID</th><th>Kapasite</th><th>Kullanılan</th><th></th></tr>
               </thead>
               <tbody>
-                @for (s of shelves(); track s.id) {
+                @for (s of allShelves(); track s.id) {
                   <tr>
                     <td>{{ s.id }}</td>
                     <td><strong>{{ s.shelfCode }}</strong></td>
@@ -156,32 +210,55 @@ import {
           <div class="section__header">
             <h2>Ürün-Raf Stokları</h2>
             <div class="section__controls">
-              <div class="form-group form-group--inline">
-                <label>Depo ID:</label>
-                <input type="number" class="form-input" [(ngModel)]="stockWarehouseId"
-                       name="stockWid" (change)="loadProductShelves()" />
+              <div class="form-group" style="min-width: 220px;">
+                <label>Depo</label>
+                <p-select
+                  [options]="warehouseStore.warehouses()"
+                  optionLabel="name"
+                  optionValue="id"
+                  placeholder="Depo seçin..."
+                  [filter]="true"
+                  filterPlaceholder="Ara..."
+                  [(ngModel)]="stockWarehouseId"
+                  (onChange)="loadProductShelves()"
+                  styleClass="w-full" />
               </div>
             </div>
           </div>
 
-          <!-- Stock update form -->
-          <div class="inline-form" style="margin-bottom: 1rem;">
-            <div class="form-group">
-              <label>Ürün ID</label>
-              <input type="number" class="form-input" [(ngModel)]="stockUpdate.productId" name="suPid" />
+          <form [formGroup]="stockUpdateForm" (ngSubmit)="onUpdateStock()" class="inline-form">
+            <div class="form-group" style="min-width: 200px;">
+              <label>Ürün</label>
+              <p-select
+                formControlName="productId"
+                [options]="products()"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Ürün seçin..."
+                [filter]="true"
+                filterPlaceholder="Ara..."
+                styleClass="w-full" />
             </div>
-            <div class="form-group">
-              <label>Raf ID</label>
-              <input type="number" class="form-input" [(ngModel)]="stockUpdate.shelfId" name="suSid" />
+            <div class="form-group" style="min-width: 200px;">
+              <label>Raf</label>
+              <p-select
+                formControlName="shelfId"
+                [options]="stockShelfOptions()"
+                optionLabel="shelfCode"
+                optionValue="id"
+                placeholder="Raf seçin..."
+                [filter]="true"
+                filterPlaceholder="Ara..."
+                styleClass="w-full" />
             </div>
             <div class="form-group">
               <label>Yeni Miktar</label>
-              <input type="number" class="form-input" [(ngModel)]="stockUpdate.newQuantity" name="suQty" />
+              <input type="number" class="form-input" formControlName="newQuantity" />
             </div>
-            <button class="btn btn-primary" (click)="onUpdateStock()">
+            <button type="submit" class="btn btn-primary" [disabled]="stockUpdateForm.invalid">
               <span class="material-symbols-outlined">update</span> Güncelle
             </button>
-          </div>
+          </form>
 
           <div class="table-wrapper">
             <table class="data-table">
@@ -204,7 +281,7 @@ import {
                     </td>
                   </tr>
                 } @empty {
-                  <tr><td colspan="5" class="empty-cell">Veri yok. Depo ID girin.</td></tr>
+                  <tr><td colspan="5" class="empty-cell">Veri yok. Depo seçin.</td></tr>
                 }
               </tbody>
             </table>
@@ -218,33 +295,85 @@ import {
           <div class="section__header">
             <h2>Stok Hareketleri</h2>
             <div class="section__controls">
-              <div class="form-group form-group--inline">
-                <label>Ürün ID:</label>
-                <input type="number" class="form-input" [(ngModel)]="movementProductId"
-                       name="movPid" (change)="loadMovements()" />
+              <div class="form-group" style="min-width: 220px;">
+                <label>Ürün</label>
+                <p-select
+                  [options]="products()"
+                  optionLabel="name"
+                  optionValue="id"
+                  placeholder="Ürün seçin..."
+                  [filter]="true"
+                  filterPlaceholder="Ara..."
+                  [(ngModel)]="movementProductId"
+                  (onChange)="loadMovements()"
+                  styleClass="w-full" />
               </div>
             </div>
           </div>
 
-          <!-- New movement form -->
-          <form class="inline-form" (ngSubmit)="onAddMovement()" style="margin-bottom: 1rem;">
-            <div class="form-group">
-              <label>Ürün ID</label>
-              <input type="number" class="form-input" [(ngModel)]="newMovement.productId" name="nmPid" required />
+          <form [formGroup]="movementForm" (ngSubmit)="onAddMovement()" class="inline-form">
+            <div class="form-group" style="min-width: 200px;">
+              <label>Ürün</label>
+              <p-select
+                formControlName="productId"
+                [options]="products()"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Ürün seçin..."
+                [filter]="true"
+                filterPlaceholder="Ara..."
+                styleClass="w-full" />
             </div>
-            <div class="form-group">
-              <label>Raf ID</label>
-              <input type="number" class="form-input" [(ngModel)]="newMovement.shelfId" name="nmSid" required />
+            <div class="form-group" style="min-width: 200px;">
+              <label>Depo</label>
+              <p-select
+                formControlName="movWarehouseId"
+                [options]="warehouseStore.warehouses()"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Depo seçin..."
+                [filter]="true"
+                filterPlaceholder="Ara..."
+                styleClass="w-full" />
+            </div>
+            <div class="form-group" style="min-width: 200px;">
+              <label>Koridor</label>
+              <p-select
+                formControlName="movAisleId"
+                [options]="movAisles()"
+                optionLabel="aisleCode"
+                optionValue="id"
+                placeholder="Koridor seçin..."
+                [disabled]="!movementForm.get('movWarehouseId')?.value"
+                [loading]="movAislesLoading()"
+                [filter]="true"
+                filterPlaceholder="Ara..."
+                styleClass="w-full" />
+            </div>
+            <div class="form-group" style="min-width: 200px;">
+              <label>Raf</label>
+              <p-select
+                formControlName="shelfId"
+                [options]="movShelves()"
+                optionLabel="shelfCode"
+                optionValue="id"
+                placeholder="Raf seçin..."
+                [disabled]="!movementForm.get('movAisleId')?.value"
+                [loading]="movShelvesLoading()"
+                [filter]="true"
+                filterPlaceholder="Ara..."
+                styleClass="w-full" />
             </div>
             <div class="form-group">
               <label>Yeni Miktar</label>
-              <input type="number" class="form-input" [(ngModel)]="newMovement.newQuantity" name="nmQty" required />
+              <input type="number" class="form-input" formControlName="newQuantity" />
             </div>
             <div class="form-group">
               <label>Sebep</label>
-              <input type="text" class="form-input" [(ngModel)]="newMovement.reason" name="nmReason" required />
+              <input type="text" class="form-input" formControlName="reason" placeholder="Hareket sebebi" />
             </div>
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-primary"
+                    [disabled]="!movementForm.get('productId')?.value || !movementForm.get('shelfId')?.value || !movementForm.get('reason')?.value">
               <span class="material-symbols-outlined">add</span> Ekle
             </button>
           </form>
@@ -275,7 +404,7 @@ import {
                     <td>{{ m.createdAt }}</td>
                   </tr>
                 } @empty {
-                  <tr><td colspan="8" class="empty-cell">Ürün ID girerek hareketleri görüntüleyin.</td></tr>
+                  <tr><td colspan="8" class="empty-cell">Ürün seçerek hareketleri görüntüleyin.</td></tr>
                 }
               </tbody>
             </table>
@@ -332,8 +461,6 @@ import {
       margin-bottom: 1rem;
     }
 
-    .form-group--inline { flex-direction: row; align-items: center; gap: 0.5rem; }
-
     .table-wrapper { overflow-x: auto; }
 
     .data-table {
@@ -350,102 +477,205 @@ import {
   `],
 })
 export class InventoryShellComponent implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly warehouseApi = inject(WarehouseApiService);
+  private readonly stockApi = inject(StockApiService);
+  private readonly productApi = inject(ProductApiService);
+  private readonly notify = inject(NotificationService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly warehouseStore = inject(WarehouseStore);
+  readonly categoryStore = inject(CategoryStore);
+  readonly inventoryStore = inject(InventoryStore);
+
   activeTab = signal<'aisles' | 'shelves' | 'stock' | 'movements'>('aisles');
 
-  // Aisles
+  // ── Aisles ──
   aisles = signal<AisleDto[]>([]);
   showAisleForm = signal(false);
-  newAisle: AisleDto = { warehouseId: 0, aisleCode: '', categoryId: 0 };
+  aisleForm = this.fb.group({
+    warehouseId: [null as number | null, Validators.required],
+    aisleCode: ['', Validators.required],
+    categoryId: [null as number | null, Validators.required],
+  });
 
-  // Shelves
-  shelves = signal<ShelfDto[]>([]);
+  // ── Shelves ──
+  allShelves = signal<ShelfDto[]>([]);
   showShelfForm = signal(false);
-  newShelf: ShelfDto = { aisleId: 0, shelfCode: '', capacity: 0, usedCapacity: 0 };
+  shelfForm = this.fb.group({
+    warehouseId: [null as number | null, Validators.required],
+    aisleId: [null as number | null, Validators.required],
+    shelfCode: ['', Validators.required],
+    capacity: [0, [Validators.required, Validators.min(1)]],
+  });
 
-  // Product-Shelf stock
+  // ── Product-Shelf stock ──
   productShelves = signal<ProductShelfResponse[]>([]);
-  stockWarehouseId = 0;
-  stockUpdate: ProductShelfUpdateRequest = { productId: 0, shelfId: 0, newQuantity: 0 };
+  products = signal<ProductCreateDto[]>([]);
+  stockShelfOptions = signal<ShelfDto[]>([]);
+  stockWarehouseId: number | null = null;
+  stockUpdateForm = this.fb.group({
+    productId: [null as number | null, Validators.required],
+    shelfId: [null as number | null, Validators.required],
+    newQuantity: [0, Validators.required],
+  });
 
-  // Movements
+  // ── Movements ──
   movements = signal<StockMovementResponse[]>([]);
-  movementProductId = 0;
-  newMovement: StockMovementRequest = { productId: 0, shelfId: 0, newQuantity: 0, reason: '' };
+  movementProductId: number | null = null;
+  movAisles = signal<AisleDto[]>([]);
+  movAislesLoading = signal(false);
+  movShelves = signal<ShelfDto[]>([]);
+  movShelvesLoading = signal(false);
 
-  constructor(
-    private warehouseApi: WarehouseApiService,
-    private stockApi: StockApiService,
-  ) {}
+  movementForm = this.fb.group({
+    productId: [null as number | null, Validators.required],
+    movWarehouseId: [null as number | null],
+    movAisleId: [null as number | null],
+    shelfId: [null as number | null, Validators.required],
+    newQuantity: [0, Validators.required],
+    reason: ['', Validators.required],
+  });
 
   ngOnInit(): void {
+    this.warehouseStore.load();
+    this.categoryStore.load();
     this.loadAisles();
-    this.loadShelves();
+    this.loadAllShelves();
+    this.loadProducts();
+
+    // Shelf form: warehouse → load aisles cascade
+    this.shelfForm.get('warehouseId')!.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((warehouseId) => {
+        this.shelfForm.patchValue({ aisleId: null });
+        if (warehouseId) {
+          this.inventoryStore.loadAislesByWarehouse(warehouseId);
+        } else {
+          this.inventoryStore.reset();
+        }
+      });
+
+    // Movement form: warehouse → aisles cascade
+    this.movementForm.get('movWarehouseId')!.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((warehouseId) => {
+        this.movementForm.patchValue({ movAisleId: null, shelfId: null });
+        this.movShelves.set([]);
+        if (warehouseId) {
+          this.movAislesLoading.set(true);
+          this.warehouseApi.getAislesByWarehouse(warehouseId).subscribe({
+            next: (list) => { this.movAisles.set(list); this.movAislesLoading.set(false); },
+            error: () => this.movAislesLoading.set(false),
+          });
+        } else {
+          this.movAisles.set([]);
+        }
+      });
+
+    // Movement form: aisle → shelves cascade
+    this.movementForm.get('movAisleId')!.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((aisleId) => {
+        this.movementForm.patchValue({ shelfId: null });
+        if (aisleId) {
+          this.movShelvesLoading.set(true);
+          this.warehouseApi.getShelvesByAisle(aisleId).subscribe({
+            next: (list) => { this.movShelves.set(list); this.movShelvesLoading.set(false); },
+            error: () => this.movShelvesLoading.set(false),
+          });
+        } else {
+          this.movShelves.set([]);
+        }
+      });
   }
 
   // ── Aisles ──
   loadAisles(): void {
-    this.warehouseApi.getAllAisles(0, 100).subscribe({
+    this.warehouseApi.getAllAisles(0, 200).subscribe({
       next: (p) => this.aisles.set(p.content),
     });
   }
 
   onCreateAisle(): void {
-    this.warehouseApi.createAisle(this.newAisle).subscribe({
+    const val = this.aisleForm.getRawValue();
+    const dto: AisleDto = { warehouseId: val.warehouseId!, aisleCode: val.aisleCode!, categoryId: val.categoryId! };
+    this.warehouseApi.createAisle(dto).subscribe({
       next: () => {
         this.loadAisles();
-        this.newAisle = { warehouseId: 0, aisleCode: '', categoryId: 0 };
+        this.aisleForm.reset();
         this.showAisleForm.set(false);
+        this.notify.success('Koridor başarıyla oluşturuldu.');
       },
     });
   }
 
   onDeleteAisle(a: AisleDto): void {
     if (confirm(`"${a.aisleCode}" koridoru silinecek. Emin misiniz?`)) {
-      this.warehouseApi.deleteAisle(a.id!).subscribe({ next: () => this.loadAisles() });
+      this.warehouseApi.deleteAisle(a.id!).subscribe({
+        next: () => { this.loadAisles(); this.notify.success('Koridor silindi.'); },
+      });
     }
   }
 
   // ── Shelves ──
-  loadShelves(): void {
-    this.warehouseApi.getAllShelves(0, 100).subscribe({
-      next: (p) => this.shelves.set(p.content),
+  loadAllShelves(): void {
+    this.warehouseApi.getAllShelves(0, 200).subscribe({
+      next: (p) => this.allShelves.set(p.content),
     });
   }
 
   onCreateShelf(): void {
-    this.warehouseApi.createShelf(this.newShelf).subscribe({
+    const val = this.shelfForm.getRawValue();
+    const dto: ShelfDto = { aisleId: val.aisleId!, shelfCode: val.shelfCode!, capacity: val.capacity!, usedCapacity: 0 };
+    this.warehouseApi.createShelf(dto).subscribe({
       next: () => {
-        this.loadShelves();
-        this.newShelf = { aisleId: 0, shelfCode: '', capacity: 0, usedCapacity: 0 };
+        this.loadAllShelves();
+        this.shelfForm.reset();
         this.showShelfForm.set(false);
+        this.notify.success('Raf başarıyla oluşturuldu.');
       },
     });
   }
 
   onDeleteShelf(s: ShelfDto): void {
     if (confirm(`"${s.shelfCode}" rafı silinecek. Emin misiniz?`)) {
-      this.warehouseApi.deleteShelf(s.id!).subscribe({ next: () => this.loadShelves() });
+      this.warehouseApi.deleteShelf(s.id!).subscribe({
+        next: () => { this.loadAllShelves(); this.notify.success('Raf silindi.'); },
+      });
     }
+  }
+
+  // ── Products (for dropdowns) ──
+  loadProducts(): void {
+    this.productApi.getAllProducts(0, 500).subscribe({
+      next: (p) => this.products.set(p.content),
+    });
   }
 
   // ── Product-Shelf Stock ──
   loadProductShelves(): void {
-    if (this.stockWarehouseId > 0) {
-      this.stockApi.getByWarehouseId(this.stockWarehouseId, 0, 100).subscribe({
+    if (this.stockWarehouseId && this.stockWarehouseId > 0) {
+      this.stockApi.getByWarehouseId(this.stockWarehouseId, 0, 200).subscribe({
         next: (p) => this.productShelves.set(p.content),
+      });
+      this.warehouseApi.getAllShelves(0, 200).subscribe({
+        next: (p) => this.stockShelfOptions.set(p.content),
       });
     }
   }
 
   onUpdateStock(): void {
-    this.stockApi.updateStock(this.stockUpdate).subscribe({
-      next: () => this.loadProductShelves(),
+    const val = this.stockUpdateForm.getRawValue();
+    const req: ProductShelfUpdateRequest = { productId: val.productId!, shelfId: val.shelfId!, newQuantity: val.newQuantity! };
+    this.stockApi.updateStock(req).subscribe({
+      next: () => { this.loadProductShelves(); this.stockUpdateForm.reset(); this.notify.success('Stok güncellendi.'); },
     });
   }
 
   // ── Movements ──
   loadMovements(): void {
-    if (this.movementProductId > 0) {
+    if (this.movementProductId && this.movementProductId > 0) {
       this.stockApi.getMovementsByProduct(this.movementProductId, 0, 50).subscribe({
         next: (p) => this.movements.set(p.content),
       });
@@ -453,15 +683,17 @@ export class InventoryShellComponent implements OnInit {
   }
 
   onAddMovement(): void {
-    this.stockApi.addMovement(this.newMovement).subscribe({
+    const val = this.movementForm.getRawValue();
+    const req: StockMovementRequest = { productId: val.productId!, shelfId: val.shelfId!, newQuantity: val.newQuantity!, reason: val.reason! };
+    this.stockApi.addMovement(req).subscribe({
       next: () => {
-        this.movementProductId = this.newMovement.productId;
+        this.movementProductId = val.productId;
         this.loadMovements();
-        this.newMovement = { productId: 0, shelfId: 0, newQuantity: 0, reason: '' };
+        this.movementForm.reset();
+        this.notify.success('Stok hareketi eklendi.');
       },
     });
   }
 }
-
 
 

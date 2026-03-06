@@ -60,6 +60,11 @@ export class WarehouseApiService {
     return this.http.get<Page<AisleDto>>(`${this.aisleBase}/all`, { params });
   }
 
+  /** Filtered: aisles belonging to a specific warehouse */
+  getAislesByWarehouse(warehouseId: number): Observable<AisleDto[]> {
+    return this.http.get<AisleDto[]>(`${this.base}/${warehouseId}/aisles`);
+  }
+
   getAisleById(id: number): Observable<AisleDto> {
     return this.http.get<AisleDto>(`${this.aisleBase}/id/${id}`);
   }
@@ -80,6 +85,11 @@ export class WarehouseApiService {
   getAllShelves(page = 0, size = 20): Observable<Page<ShelfDto>> {
     const params = new HttpParams().set('page', page).set('size', size);
     return this.http.get<Page<ShelfDto>>(`${this.shelfBase}/all`, { params });
+  }
+
+  /** Filtered: shelves belonging to a specific aisle */
+  getShelvesByAisle(aisleId: number): Observable<ShelfDto[]> {
+    return this.http.get<ShelfDto[]>(`${this.aisleBase}/${aisleId}/shelves`);
   }
 
   getShelfById(id: number): Observable<ShelfDto> {

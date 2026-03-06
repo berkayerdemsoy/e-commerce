@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/auth/auth.service';
 import { LoginRequest } from '../../core/auth/auth.model';
@@ -7,7 +7,7 @@ import { LoginRequest } from '../../core/auth/auth.model';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   template: `
     <div class="login-page">
       <div class="login-card">
@@ -59,6 +59,11 @@ import { LoginRequest } from '../../core/auth/auth.model';
             }
           </button>
         </form>
+
+        <div class="login-footer">
+          <span>Hesabınız yok mu?</span>
+          <a routerLink="/register">Hesap Oluştur</a>
+        </div>
       </div>
     </div>
   `,
@@ -139,6 +144,20 @@ import { LoginRequest } from '../../core/auth/auth.model';
     @keyframes spin {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
+    }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.875rem;
+      color: $gray-500;
+
+      a {
+        color: $primary;
+        font-weight: 600;
+        margin-left: 0.25rem;
+        &:hover { text-decoration: underline; }
+      }
     }
   `],
 })

@@ -1,13 +1,16 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
+import { Select } from 'primeng/select';
 import { ProductApiService } from '../../../core/api/product-api.service';
+import { CategoryStore } from '../../../core/store/category.store';
+import { NotificationService } from '../../../core/notification/notification.service';
 import { ProductCreateDto } from '../../../core/api/api.model';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [FormsModule, DecimalPipe],
+  imports: [ReactiveFormsModule, DecimalPipe, Select],
   template: `
     <div class="page">
       <div class="page__header">
@@ -15,7 +18,7 @@ import { ProductCreateDto } from '../../../core/api/api.model';
           <h1>Ürünler</h1>
           <p>Ürün kataloğunu yönetin</p>
         </div>
-        <button class="btn btn-primary" (click)="showForm.set(!showForm())">
+        <button class="btn btn-primary" (click)="toggleForm()">
           <span class="material-symbols-outlined">{{ showForm() ? 'close' : 'add' }}</span>
           {{ showForm() ? 'Kapat' : 'Yeni Ürün' }}
         </button>
@@ -25,25 +28,34 @@ import { ProductCreateDto } from '../../../core/api/api.model';
       @if (showForm()) {
         <div class="card form-section">
           <h2>{{ editingId ? 'Ürün Düzenle' : 'Yeni Ürün' }}</h2>
-          <form class="inline-form" (ngSubmit)="onSubmit()">
+          <form [formGroup]="form" (ngSubmit)="onSubmit()" class="inline-form">
             <div class="form-group">
               <label>Ürün Adı</label>
-              <input type="text" class="form-input" [(ngModel)]="formData.name" name="name" required />
+              <input type="text" class="form-input" formControlName="name" placeholder="Ürün adı" />
             </div>
             <div class="form-group">
               <label>Açıklama</label>
-              <input type="text" class="form-input" [(ngModel)]="formData.description" name="desc" required />
+              <input type="text" class="form-input" formControlName="description" placeholder="Ürün açıklaması" />
             </div>
             <div class="form-group">
               <label>Fiyat</label>
-              <input type="number" class="form-input" [(ngModel)]="formData.price" name="price" step="0.01" required />
+              <input type="number" class="form-input" formControlName="price" step="0.01" />
             </div>
-            <div class="form-group">
-              <label>Kategori ID</label>
-              <input type="number" class="form-input" [(ngModel)]="formData.category_id" name="catId" required />
+            <div class="form-group" style="min-width: 200px;">
+              <label>Kategori</label>
+              <p-select
+                formControlName="category_id"
+                [options]="categoryStore.categories()"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Kategori seçin..."
+                [filter]="true"
+                filterPlaceholder="Ara..."
+                [showClear]="true"
+                styleClass="w-full" />
             </div>
             <div class="form-actions">
-              <button type="submit" class="btn btn-primary">
+              <button type="submit" class="btn btn-primary" [disabled]="form.invalid">
                 {{ editingId ? 'Güncelle' : 'Oluştur' }}
               </button>
               @if (editingId) {
@@ -75,7 +87,7 @@ import { ProductCreateDto } from '../../../core/api/api.model';
                   <td><strong>{{ p.name }}</strong></td>
                   <td class="desc-cell">{{ p.description }}</td>
                   <td>₺{{ p.price | number:'1.2-2' }}</td>
-                  <td>{{ p.category_id }}</td>
+                  <td>{{ getCategoryName(p.category_id) }}</td>
                   <td class="action-cell">
                     <button class="btn btn-secondary btn-sm" (click)="onEdit(p)">
                       <span class="material-symbols-outlined">edit</span>
@@ -149,17 +161,35 @@ import { ProductCreateDto } from '../../../core/api/api.model';
   `],
 })
 export class ProductListComponent implements OnInit {
+  private readonly api = inject(ProductApiService);
+  private readonly fb = inject(FormBuilder);
+  private readonly notify = inject(NotificationService);
+  readonly categoryStore = inject(CategoryStore);
+
   products = signal<ProductCreateDto[]>([]);
   currentPage = signal(0);
   totalPages = signal(0);
   showForm = signal(false);
   editingId: number | null = null;
-  formData: ProductCreateDto = { name: '', description: '', price: 0, category_id: 0 };
 
-  constructor(private api: ProductApiService) {}
+  form = this.fb.group({
+    name: ['', Validators.required],
+    description: ['', Validators.required],
+    price: [0, [Validators.required, Validators.min(0.01)]],
+    category_id: [null as number | null, Validators.required],
+  });
 
   ngOnInit(): void {
     this.loadPage(0);
+    this.categoryStore.load();
+  }
+
+  toggleForm(): void {
+    if (this.showForm()) {
+      this.cancelEdit();
+    } else {
+      this.showForm.set(true);
+    }
   }
 
   loadPage(page: number): void {
@@ -172,35 +202,62 @@ export class ProductListComponent implements OnInit {
     });
   }
 
+  getCategoryName(categoryId: number): string {
+    const cat = this.categoryStore.categories().find((c) => c.id === categoryId);
+    return cat ? cat.name : `#${categoryId}`;
+  }
+
   onSubmit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    const val = this.form.getRawValue();
+    const dto: ProductCreateDto = {
+      name: val.name!,
+      description: val.description!,
+      price: val.price!,
+      category_id: val.category_id!,
+    };
+
     const op$ = this.editingId
-      ? this.api.updateProduct(this.editingId, this.formData)
-      : this.api.createProduct(this.formData);
+      ? this.api.updateProduct(this.editingId, dto)
+      : this.api.createProduct(dto);
 
     op$.subscribe({
       next: () => {
         this.loadPage(this.currentPage());
         this.cancelEdit();
+        this.notify.success(this.editingId ? 'Ürün güncellendi.' : 'Ürün oluşturuldu.');
       },
     });
   }
 
   onEdit(p: ProductCreateDto): void {
     this.editingId = p.id!;
-    this.formData = { ...p };
+    this.form.patchValue({
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      category_id: p.category_id,
+    });
     this.showForm.set(true);
   }
 
   cancelEdit(): void {
     this.editingId = null;
-    this.formData = { name: '', description: '', price: 0, category_id: 0 };
+    this.form.reset();
     this.showForm.set(false);
   }
 
   onDelete(p: ProductCreateDto): void {
     if (confirm(`"${p.name}" ürünü silinecek. Emin misiniz?`)) {
       this.api.deleteProduct(p.id!).subscribe({
-        next: () => this.loadPage(this.currentPage()),
+        next: () => {
+          this.loadPage(this.currentPage());
+          this.notify.success('Ürün silindi.');
+        },
       });
     }
   }
