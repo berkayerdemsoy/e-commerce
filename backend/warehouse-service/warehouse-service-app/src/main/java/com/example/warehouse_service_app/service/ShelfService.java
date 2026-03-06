@@ -4,6 +4,8 @@ import com.example.warehouse_service_client.dto.ShelfDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface ShelfService {
     ShelfDto getShelfById(Long id);
     ShelfDto getShelfByShelfCode(String code);
@@ -11,4 +13,5 @@ public interface ShelfService {
     ShelfDto createShelf(ShelfDto shelfDto);
     ShelfDto updateShelf(Long id , ShelfDto shelfDto);
     Void deleteShelfById(Long id);
+    List<ShelfDto> getShelvesByAisleId(Long aisleId);
 }

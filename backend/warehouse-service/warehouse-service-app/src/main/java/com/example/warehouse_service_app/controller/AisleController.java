@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/aisles")
@@ -40,5 +42,9 @@ public class AisleController {
     public ResponseEntity<Void> deleteAisle(@PathVariable("id") Long id){
         aisleService.deleteAisleById(id);
         return ResponseEntity.noContent().build();
+    }
+    @GetMapping("/warehouse/{warehouseId}")
+    public ResponseEntity<List<AisleDto>> getAislesByWarehouseId(@PathVariable("warehouseId") Long warehouseId){
+        return ResponseEntity.ok(aisleService.getAislesByWarehouseId(warehouseId));
     }
 }

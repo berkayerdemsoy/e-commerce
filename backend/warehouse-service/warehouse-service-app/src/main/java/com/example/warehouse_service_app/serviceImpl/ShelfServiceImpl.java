@@ -14,6 +14,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class ShelfServiceImpl implements ShelfService {
@@ -65,5 +68,11 @@ public class ShelfServiceImpl implements ShelfService {
     public Void deleteShelfById(Long id) {
         shelfRepository.deleteById(id);
         return null;
+    }
+
+    @Override
+    public List<ShelfDto> getShelvesByAisleId(Long aisleId) {
+        List<Shelf> shelves = shelfRepository.findByAisleId(aisleId);
+        return shelves.stream().map(mapper::toDto).collect(Collectors.toList());
     }
 }
